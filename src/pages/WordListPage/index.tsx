@@ -2,6 +2,7 @@ import { Button, Container, TextField } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../services/context';
+import { Index, useHandleIndexes } from '../../services/useIndexes';
 import { Character, useHandleWords, Word } from '../../services/useWords';
 
 type OmittedWord = Omit<Word, 'id' | 'createdAt' | 'wordListId'>;
@@ -10,12 +11,12 @@ const WordListPage = () => {
   const navigate = useNavigate();
   const { words: superWords, wordList } = useContext(AppContext);
   const { batchAddWords, batchDeleteWords } = useHandleWords();
+  const { batchDeleteIndexesByWordIds, batchAddIndexes } = useHandleIndexes();
 
   const [input, setInput] = useState('');
   const [words, setWords] = useState<OmittedWord[]>([]);
 
   useEffect(() => {
-    console.log(superWords);
     const input = stringifyWords(superWords);
     setInput(input);
     const words = parseWords(input);
@@ -30,11 +31,12 @@ const WordListPage = () => {
     setWords(words);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // 既存のwords を削除
     const ids = superWords.map((word) => word.id).filter((i) => i);
     if (ids.length) {
       batchDeleteWords(ids);
+      batchDeleteIndexesByWordIds(ids);
     }
     // 新規に追加
     const newWords: Omit<Word, 'id'>[] = [];
@@ -47,7 +49,21 @@ const WordListPage = () => {
       };
       newWords.push(newWord);
     }
-    batchAddWords(newWords);
+    const wordIds = await batchAddWords(newWords);
+    const newIndexes: Omit<Index, 'id'>[] = [];
+    for (const word of words) {
+      const { index, characters } = word;
+      const wordId = wordIds[index];
+      const newIndex: Omit<Index, 'id'> = {
+        wordId,
+        wordFormIndexes: {},
+      };
+      for (const { form } of characters) {
+        newIndex.wordFormIndexes[form] = true;
+      }
+      newIndexes.push(newIndex);
+    }
+    batchAddIndexes(newIndexes);
   };
 
   return (
