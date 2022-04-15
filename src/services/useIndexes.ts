@@ -89,11 +89,21 @@ export const useHandleIndexes = () => {
     }
   };
 
-  const getWordIdsByForms = async (value: string): Promise<string[]> => {
+  const getWordIdsByForms = async ({
+    value,
+    max,
+  }: {
+    value: string;
+    max?: number;
+  }): Promise<string[]> => {
     const queries = [];
 
     for (const index of value.split('')) {
       queries.push(where(`wordFormIndexes.${index}`, '==', true));
+    }
+
+    if (!!max) {
+      queries.push(limit(max));
     }
 
     const indexes = await _getDocumentsByQuery({
