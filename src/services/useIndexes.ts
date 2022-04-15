@@ -1,25 +1,17 @@
 import {
   limit,
-  orderBy,
-  Unsubscribe,
   DocumentData,
   QueryConstraint,
-  getDoc,
   where,
-  doc,
 } from '@firebase/firestore';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { db } from '../repositories/firebase';
 import {
-  addDocument,
-  deleteDocument,
-  snapshotCollection,
-  updateDocument,
   batchDeleteDocuments,
   batchAddDocuments,
-  getDocument,
   getDocumentsByQuery,
 } from '../repositories/firebase/utils';
+import { Word } from './useWords';
 
 const COLLECTION = 'indexes';
 
@@ -27,12 +19,16 @@ export type Index = {
   id: string;
   wordId: string;
   wordFormIndexes: { [key: string]: boolean };
+  wordPinyinIndexes: { [key: string]: boolean };
+  wordPinyinNoToneIndexes: { [key: string]: boolean };
 };
 
 export const INITIAL_INDEX: Index = {
   id: '',
   wordId: '',
   wordFormIndexes: {},
+  wordPinyinIndexes: {},
+  wordPinyinNoToneIndexes: {},
 };
 
 export const useHandleIndexes = () => {
@@ -73,33 +69,49 @@ export const useHandleIndexes = () => {
 
     await Promise.all(
       wordIds.map(async (wordId) => {
-        console.log({ wordId });
         const result = await _getDocumentsByQuery({
           queries: [where('wordId', '==', wordId)],
           buildValue: buildIndex,
         });
-        console.log({ result });
         if (!!result.length) {
           ids.push(result[0].id);
         }
       })
     );
     if (!!ids.length) {
-      _batchDeleteDocuments(ids);
+      return await _batchDeleteDocuments(ids);
     }
+    return true;
   };
 
-  const getWordIdsByForms = async ({
-    value,
+  const getWordIdsByIndexes = async ({
     max,
+    type,
+    value,
   }: {
-    value: string;
     max?: number;
+    type: 'pinyinNoTone' | 'form' | 'pinyin';
+    value: string;
   }): Promise<string[]> => {
     const queries = [];
 
-    for (const index of value.split('')) {
-      queries.push(where(`wordFormIndexes.${index}`, '==', true));
+    switch (type) {
+      case 'pinyinNoTone':
+        for (const index of value.split(' ')) {
+          queries.push(where(`wordPinyinNoToneIndexes.${index}`, '==', true));
+        }
+        break;
+      case 'form':
+        for (const index of value.split('')) {
+          queries.push(where(`wordFormIndexes.${index}`, '==', true));
+        }
+        break;
+      case 'pinyin':
+        for (const index of value.split(' ')) {
+          queries.push(where(`wordPinyinIndexes.${index}`, '==', true));
+        }
+        break;
+      default:
     }
 
     if (!!max) {
@@ -114,7 +126,11 @@ export const useHandleIndexes = () => {
     return wordIds;
   };
 
-  return { batchAddIndexes, batchDeleteIndexesByWordIds, getWordIdsByForms };
+  return {
+    batchAddIndexes,
+    getWordIdsByIndexes,
+    batchDeleteIndexesByWordIds,
+  };
 };
 
 const buildIndex = (doc: DocumentData) => {
@@ -122,6 +138,29 @@ const buildIndex = (doc: DocumentData) => {
     id: doc.id,
     wordId: doc.data().wordId,
     wordFormIndexes: doc.data().wordFormIndexes,
+    wordPinyinIndexes: doc.data().wordPinyinIndexes,
+    wordPinyinNoToneIndexes: doc.data().wordPinyinNoToneIndexes,
   };
   return index;
+};
+
+export const words2Indexes = (words: Word[]) => {
+  const indexes: Omit<Index, 'id'>[] = [];
+  for (const word of words) {
+    const { characters } = word;
+    const newIndex: Omit<Index, 'id'> = {
+      wordId: word.id,
+      wordFormIndexes: {},
+      wordPinyinIndexes: {},
+      wordPinyinNoToneIndexes: {},
+    };
+    for (const { form, pinyin } of characters) {
+      newIndex.wordFormIndexes[form] = true;
+      newIndex.wordPinyinIndexes[pinyin] = true;
+      const pinyinNoTone = pinyin.replace(/[1-4]/g, '');
+      newIndex.wordPinyinNoToneIndexes[pinyinNoTone] = true;
+    }
+    indexes.push(newIndex);
+  }
+  return indexes;
 };

@@ -53,11 +53,9 @@ const WordListsPage = () => {
   return (
     <Container maxWidth='sm' sx={{ marginTop: 5 }}>
       <div style={{ display: 'grid', rowGap: 16 }}>
-        <h1>WordLists</h1>
         <div>
+          <h1>WordLists</h1>
           <Button onClick={() => navigate('/')}>戻る</Button>
-        </div>
-        <div>
           <Button onClick={handleClickCreate}>新規作成</Button>
         </div>
         <Table size='small'>

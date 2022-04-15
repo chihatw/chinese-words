@@ -3,7 +3,11 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WordRow from '../../components/WordRow';
 import { AppContext } from '../../services/context';
-import { Index, useHandleIndexes } from '../../services/useIndexes';
+import {
+  Index,
+  useHandleIndexes,
+  words2Indexes,
+} from '../../services/useIndexes';
 import { Character, useHandleWords, Word } from '../../services/useWords';
 
 type OmittedWord = Omit<Word, 'id' | 'createdAt' | 'wordListId'>;
@@ -51,19 +55,13 @@ const WordListPage = () => {
       newWords.push(newWord);
     }
     const wordIds = await batchAddWords(newWords);
-    const newIndexes: Omit<Index, 'id'>[] = [];
-    for (const word of words) {
-      const { index, characters } = word;
-      const wordId = wordIds[index];
-      const newIndex: Omit<Index, 'id'> = {
-        wordId,
-        wordFormIndexes: {},
-      };
-      for (const { form } of characters) {
-        newIndex.wordFormIndexes[form] = true;
-      }
-      newIndexes.push(newIndex);
-    }
+    const _words: Word[] = words.map((word, index) => ({
+      ...word,
+      createdAt: 0,
+      wordListId: '',
+      id: wordIds[index],
+    }));
+    const newIndexes: Omit<Index, 'id'>[] = words2Indexes(_words);
     batchAddIndexes(newIndexes);
   };
 
@@ -119,7 +117,7 @@ const parseWords = (value: string) => {
 
     const characters = buildCharacters({ chinese, pinyins });
 
-    const word: Omit<Word, 'id' | 'createdAt' | 'wordListId'> = {
+    const word: OmittedWord = {
       index,
       characters,
       sentence,

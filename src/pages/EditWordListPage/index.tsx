@@ -3,12 +3,10 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../services/context';
 import { useHandleWordLists, WordList } from '../../services/useWordList';
-import { useHandleWords } from '../../services/useWords';
 
 const EditWordListPage = () => {
   const navigate = useNavigate();
   const { wordList } = useContext(AppContext);
-
   const { addWordList, updateWordList } = useHandleWordLists();
 
   const [title, setTitle] = useState('');
@@ -56,8 +54,8 @@ const EditWordListPage = () => {
   return (
     <Container maxWidth='sm' sx={{ marginTop: 5 }}>
       <div style={{ display: 'grid', rowGap: 16 }}>
-        <h1>Edit WordList</h1>
         <div>
+          <h1>{`${wordList.id ? 'Edit' : 'New'} WordList`}</h1>
           <Button onClick={() => navigate('/lists')}>戻る</Button>
         </div>
         <TextField
@@ -75,7 +73,9 @@ const EditWordListPage = () => {
           onChange={(e) => setUploadedAtStr(e.target.value)}
           label='uploadedAt'
         />
-        <Button onClick={hancleClickSubmit}>submit</Button>
+        <Button onClick={hancleClickSubmit}>
+          {wordList.id ? 'Update' : 'Create'}
+        </Button>
       </div>
     </Container>
   );

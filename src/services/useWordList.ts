@@ -4,8 +4,6 @@ import {
   Unsubscribe,
   DocumentData,
   QueryConstraint,
-  getDoc,
-  doc,
 } from '@firebase/firestore';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { db } from '../repositories/firebase';
