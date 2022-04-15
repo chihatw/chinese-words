@@ -1,6 +1,7 @@
 import { Button, Container, TextField } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import WordRow from '../../components/WordRow';
 import { AppContext } from '../../services/context';
 import { Index, useHandleIndexes } from '../../services/useIndexes';
 import { Character, useHandleWords, Word } from '../../services/useWords';
@@ -77,6 +78,7 @@ const WordListPage = () => {
           multiline
           value={input}
           onChange={(e) => handleChangeInput(e.target.value)}
+          rows={20}
         />
         <Button onClick={handleSubmit}>submit</Button>
       </div>
@@ -91,33 +93,6 @@ const WordListPage = () => {
 
 export default WordListPage;
 
-const WordRow = ({ word, index }: { word: OmittedWord; index: number }) => {
-  const { sentence, japanese, characters } = word;
-  return (
-    <div style={{ display: 'flex' }}>
-      <div style={{ marginRight: 16 }}>{index + 1}</div>
-      <div style={{ display: 'grid', rowGap: 4 }}>
-        <div style={{ display: 'flex' }}>
-          {characters.map((character, index) => (
-            <CharacterUnit key={index} character={character} />
-          ))}
-        </div>
-        <div style={{ fontSize: 12, color: '#52a2aa' }}>{sentence}</div>
-        <div style={{ fontSize: 12, color: '#aaa' }}>{japanese}</div>
-      </div>
-    </div>
-  );
-};
-
-const CharacterUnit = ({ character }: { character: Character }) => {
-  const { form, pinyin } = character;
-  return (
-    <div style={{ display: 'grid', marginRight: 4 }}>
-      <div style={{ textAlign: 'center', fontSize: 8 }}>{pinyin}</div>
-      <div style={{ textAlign: 'center' }}>{form}</div>
-    </div>
-  );
-};
 const stringifyWords = (words: Word[]) => {
   const lines: string[] = [];
   for (const word of words) {

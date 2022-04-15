@@ -15,7 +15,7 @@ const TopPage = () => {
           <Button onClick={() => navigate('/practice')}>Practice</Button>
         </div>
         <div>
-          <Button onClick={() => navigate('/search')}>Search word</Button>
+          <Button onClick={() => navigate('/search')}>Search words</Button>
         </div>
       </div>
     </Container>
