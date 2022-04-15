@@ -2,6 +2,7 @@ import { Container, TextField, Button } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WordRow from '../../components/WordRow';
+import AppLayout from '../../layout/AppLayout';
 import { useHandleIndexes } from '../../services/useIndexes';
 import { useHandleWords, Word } from '../../services/useWords';
 
@@ -69,31 +70,29 @@ const SearchPage = () => {
     }
   };
   return (
-    <Container maxWidth='sm' sx={{ marginTop: 5 }}>
-      <div style={{ display: 'grid', rowGap: 16 }}>
-        <div>
-          <h1>Search Words</h1>
-          <Button onClick={() => navigate('/')}>戻る</Button>
-        </div>
-        <TextField
-          size='small'
-          value={formsInput}
-          onChange={(e) => handleChangeFormsInput(e.target.value)}
-          label='文字'
-        />
-        <TextField
-          size='small'
-          label='拼音'
-          value={pinyinsInput}
-          onChange={(e) => {
-            handleChangePinyinsInput(e.target.value);
-          }}
-        />
-        {words.map((word, index) => (
-          <WordRow key={index} index={index} word={word} />
-        ))}
+    <AppLayout>
+      <div>
+        <h1>Search Words</h1>
+        <Button onClick={() => navigate('/')}>戻る</Button>
       </div>
-    </Container>
+      <TextField
+        size='small'
+        value={formsInput}
+        onChange={(e) => handleChangeFormsInput(e.target.value)}
+        label='文字'
+      />
+      <TextField
+        size='small'
+        label='拼音'
+        value={pinyinsInput}
+        onChange={(e) => {
+          handleChangePinyinsInput(e.target.value);
+        }}
+      />
+      {words.map((word, index) => (
+        <WordRow key={index} index={index} word={word} />
+      ))}
+    </AppLayout>
   );
 };
 

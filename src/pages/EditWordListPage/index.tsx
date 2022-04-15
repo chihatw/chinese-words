@@ -1,6 +1,7 @@
 import { Button, Container, TextField } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AppLayout from '../../layout/AppLayout';
 import { AppContext } from '../../services/context';
 import { useHandleWordLists, WordList } from '../../services/useWordList';
 
@@ -52,32 +53,30 @@ const EditWordListPage = () => {
     }
   };
   return (
-    <Container maxWidth='sm' sx={{ marginTop: 5 }}>
-      <div style={{ display: 'grid', rowGap: 16 }}>
-        <div>
-          <h1>{`${wordList.id ? 'Edit' : 'New'} WordList`}</h1>
-          <Button onClick={() => navigate('/lists')}>戻る</Button>
-        </div>
-        <TextField
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          label='title'
-        />
-        <TextField
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          label='url'
-        />
-        <TextField
-          value={uploadedAtStr}
-          onChange={(e) => setUploadedAtStr(e.target.value)}
-          label='uploadedAt'
-        />
-        <Button onClick={hancleClickSubmit}>
-          {wordList.id ? 'Update' : 'Create'}
-        </Button>
+    <AppLayout>
+      <div>
+        <h1>{`${wordList.id ? 'Edit' : 'New'} WordList`}</h1>
+        <Button onClick={() => navigate('/lists')}>戻る</Button>
       </div>
-    </Container>
+      <TextField
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        label='title'
+      />
+      <TextField
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        label='url'
+      />
+      <TextField
+        value={uploadedAtStr}
+        onChange={(e) => setUploadedAtStr(e.target.value)}
+        label='uploadedAt'
+      />
+      <Button onClick={hancleClickSubmit}>
+        {wordList.id ? 'Update' : 'Create'}
+      </Button>
+    </AppLayout>
   );
 };
 

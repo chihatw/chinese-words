@@ -1,17 +1,16 @@
-import { Delete, Edit, MenuBook, Subject } from '@mui/icons-material';
+import { Delete, Edit, Subject } from '@mui/icons-material';
 import {
-  Container,
   Table,
   TableHead,
   TableRow,
   TableBody,
   TableCell,
   IconButton,
-  Menu,
   Button,
 } from '@mui/material';
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AppLayout from '../../layout/AppLayout';
 import { AppContext } from '../../services/context';
 import { useHandleWordLists, WordList } from '../../services/useWordList';
 
@@ -51,36 +50,34 @@ const WordListsPage = () => {
   };
 
   return (
-    <Container maxWidth='sm' sx={{ marginTop: 5 }}>
-      <div style={{ display: 'grid', rowGap: 16 }}>
-        <div>
-          <h1>WordLists</h1>
-          <Button onClick={() => navigate('/')}>戻る</Button>
-          <Button onClick={handleClickCreate}>新規作成</Button>
-        </div>
-        <Table size='small'>
-          <TableHead>
-            <TableRow>
-              <TableCell>title</TableCell>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {wordLists.map((wordList, index) => (
-              <WordListRow
-                key={index}
-                wordList={wordList}
-                handleOpenList={() => handleOpenList(wordList.id)}
-                handleClickEdit={() => handleClickEdit(wordList.id)}
-                handleClickDelete={() => handleClickDelete(wordList.id)}
-              />
-            ))}
-          </TableBody>
-        </Table>
+    <AppLayout>
+      <div>
+        <h1>WordLists</h1>
+        <Button onClick={() => navigate('/')}>戻る</Button>
+        <Button onClick={handleClickCreate}>新規作成</Button>
       </div>
-    </Container>
+      <Table size='small'>
+        <TableHead>
+          <TableRow>
+            <TableCell>title</TableCell>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
+            <TableCell></TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {wordLists.map((wordList, index) => (
+            <WordListRow
+              key={index}
+              wordList={wordList}
+              handleOpenList={() => handleOpenList(wordList.id)}
+              handleClickEdit={() => handleClickEdit(wordList.id)}
+              handleClickDelete={() => handleClickDelete(wordList.id)}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </AppLayout>
   );
 };
 

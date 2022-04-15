@@ -2,6 +2,7 @@ import { Button, Container, TextField } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WordRow from '../../components/WordRow';
+import AppLayout from '../../layout/AppLayout';
 import { AppContext } from '../../services/context';
 import {
   Index,
@@ -66,26 +67,24 @@ const WordListPage = () => {
   };
 
   return (
-    <Container maxWidth='sm' sx={{ marginTop: 5 }}>
-      <div style={{ display: 'grid', rowGap: 16 }}>
-        <h1>WordList</h1>
-        <div>
-          <Button onClick={() => navigate('/lists')}>戻る</Button>
-        </div>
-        <TextField
-          multiline
-          value={input}
-          onChange={(e) => handleChangeInput(e.target.value)}
-          rows={20}
-        />
-        <Button onClick={handleSubmit}>submit</Button>
+    <AppLayout>
+      <h1>WordList</h1>
+      <div>
+        <Button onClick={() => navigate('/lists')}>戻る</Button>
       </div>
+      <TextField
+        multiline
+        value={input}
+        onChange={(e) => handleChangeInput(e.target.value)}
+        rows={20}
+      />
+      <Button onClick={handleSubmit}>submit</Button>
       <div>
         {words.map((word, index) => (
           <WordRow key={index} word={word} index={index} />
         ))}
       </div>
-    </Container>
+    </AppLayout>
   );
 };
 
