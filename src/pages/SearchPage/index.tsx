@@ -1,8 +1,9 @@
-import { Container, TextField, Button } from '@mui/material';
+import { TextField, Button } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WordRow from '../../components/WordRow';
 import AppLayout from '../../layout/AppLayout';
+import { string2Pinyin } from '../../services/pinyins';
 import { useHandleIndexes } from '../../services/useIndexes';
 import { useHandleWords, Word } from '../../services/useWords';
 
@@ -49,19 +50,26 @@ const SearchPage = () => {
       setWordIds([]);
     }
   };
+
   const handleChangePinyinsInput = async (value: string) => {
     setPinyinsInput(value);
+    const pinyins = value.split(' ').map((str) => string2Pinyin(str));
+    const pinyinStr = pinyins.filter((i) => i).join(' ');
     setFormsInput('');
-    if (!!value) {
+    if (!!pinyinStr) {
       let wordIds: string[] = [];
-      const lastChar = value.slice(-1);
+      const lastChar = pinyinStr.slice(-1);
       if (['1', '2', '3', '4'].includes(lastChar)) {
-        wordIds = await getWordIdsByIndexes({ value, max: 10, type: 'pinyin' });
+        wordIds = await getWordIdsByIndexes({
+          value: pinyinStr,
+          max: 10,
+          type: 'pinyin',
+        });
       } else {
         wordIds = await getWordIdsByIndexes({
           max: 10,
           type: 'pinyinNoTone',
-          value,
+          value: pinyinStr,
         });
       }
       setWordIds(wordIds);

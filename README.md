@@ -13,3 +13,5 @@ npm install @mui/material @emotion/react @emotion/styled @mui/icons-material rea
   ]
 }
 ```
+
+### type Character の変更
