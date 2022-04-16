@@ -1,4 +1,4 @@
-import { INITIAL_PINYIN, Pinyin } from './useWords';
+import { Pinyin } from './useWords';
 
 export const string2Pinyin = (value: string): Pinyin => {
   const tail = value.slice(-1);
@@ -51,15 +51,38 @@ const getConsonant = (value: string) => {
   return consonant;
 };
 
-const consonants_0 = ['bpmf', 'dtnl', 'zcs', 'r', 'jqx', 'gkh', 'yw']
+const consonants_0 = ['bpmf', 'dtnl', 'zcs', 'r', 'jqx', 'gkh']
   .join('')
   .split('');
 const consonants_1 = ['zh', 'ch', 'sh'];
 
 const vowelGroups = [
-  ['uang', 'iang', 'iong'],
-  ['ang', 'ong', 'eng', 'ing', 'uan', 'van', 'ian', 'iao', 'uai'],
+  ['ying', 'yuan', 'uang', 'iang', 'wang', 'yang', 'iong', 'yong', 'weng'],
   [
+    'yin',
+    'wen',
+    'yun',
+    'ang',
+    'ong',
+    'eng',
+    'ing',
+    'wei',
+    'you',
+    'yue',
+    'uan',
+    'van',
+    'ian',
+    'wan',
+    'yan',
+    'iao',
+    'uai',
+    'yao',
+    'wai',
+  ],
+  [
+    'yi',
+    'wu',
+    'yu',
     'an',
     'en',
     'un',
@@ -70,32 +93,36 @@ const vowelGroups = [
     'ui',
     'ao',
     'uo',
+    'wo',
     'ou',
     'iu',
     've',
-    'ue',
     'ie',
+    'ue',
+    'ye',
     'ua',
     'ia',
+    'ya',
+    'wa',
     'er',
   ],
   ['a', 'o', 'e', 'u', 'v', 'i'],
 ];
 
 // base data
-const vowels_0 = ['a', 'o', 'e', 'u', 'v', 'i']; // 6
-const vowels_1 = ['an', 'en', 'un', 'vn', 'in']; // 5
-const vowels_2 = ['ang', 'ong', 'eng', 'ing']; // 4
-const vowels_3 = ['ai', 'ei', 'ui']; // 3
-const vowels_4 = ['ao', 'uo']; // 2
-const vowels_5 = ['ou', 'iu']; // 2
-const vowels_6 = ['ve', 'ie', 'ue']; // 3
-const vowels_7 = ['ua', 'ia']; // 2
-const vowels_8 = ['uan', 'van', 'ian']; // 3
-const vowels_9 = ['uang', 'iang']; // 2
-const vowels_10 = ['iao', 'uai', 'iong', 'er']; // 4
+const vowels_0 = ['a', 'o', 'e', 'u', 'v', 'i', 'yi', 'wu', 'yu']; // 6+3
+const vowels_1 = ['an', 'en', 'un', 'vn', 'in', 'yin', 'wen', 'yun']; // 5+3
+const vowels_2 = ['ang', 'ong', 'eng', 'ing', 'ying']; // 4+1
+const vowels_3 = ['ai', 'ei', 'ui', 'wei']; // 3+1
+const vowels_4 = ['ao', 'uo', 'wo']; // 2+1
+const vowels_5 = ['ou', 'iu', 'you']; // 2+1
+const vowels_6 = ['ve', 'ie', 'ue', 'ye', 'yue']; // 3+2
+const vowels_7 = ['ua', 'ia', 'ya', 'wa']; // 2+2
+const vowels_8 = ['uan', 'van', 'ian', 'wan', 'yan', 'yuan']; // 3+3
+const vowels_9 = ['uang', 'iang', 'wang', 'yang']; // 2+2
+const vowels_10 = ['iao', 'uai', 'iong', 'er', 'yao', 'wai', 'yong', 'weng']; // 4+4
 
-const buildVowelGroups = () => {
+export const buildVowelGroups = () => {
   const vowels = [
     vowels_0,
     vowels_1,

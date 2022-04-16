@@ -140,13 +140,26 @@ export const word2Index = (word: Pick<Word, 'characters' | 'id'>) => {
     wordPinyinIndexes: {},
   };
   for (const { form, pinyin } of characters) {
+    let value = '';
     const { consonant, vowel, tone } = pinyin;
-    index.wordFormIndexes[form] = true;
-    index.wordPinyinIndexes[consonant + vowel + tone] = true;
-    index.wordPinyinIndexes[consonant + vowel] = true;
-    index.wordPinyinIndexes[vowel + tone] = true;
-    index.wordPinyinIndexes[vowel] = true;
-    index.wordPinyinIndexes[consonant] = true;
+
+    value = form;
+    !!value && (index.wordPinyinIndexes[value] = true);
+
+    value = consonant + vowel + tone;
+    !!value && (index.wordPinyinIndexes[value] = true);
+
+    value = consonant + vowel;
+    !!value && (index.wordPinyinIndexes[value] = true);
+
+    value = vowel + tone;
+    !!value && (index.wordPinyinIndexes[value] = true);
+
+    value = vowel;
+    !!value && (index.wordPinyinIndexes[value] = true);
+
+    value = consonant;
+    !!value && (index.wordPinyinIndexes[value] = true);
   }
   return index;
 };
