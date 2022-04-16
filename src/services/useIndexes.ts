@@ -7,10 +7,10 @@ import {
 import { useCallback, useMemo } from 'react';
 import { db } from '../repositories/firebase';
 import {
-  batchDeleteDocuments,
-  batchAddDocuments,
-  getDocumentsByQuery,
   updateDocument,
+  batchSetDocuments,
+  getDocumentsByQuery,
+  batchDeleteDocuments,
 } from '../repositories/firebase/utils';
 import { Word } from './useWords';
 
@@ -18,14 +18,12 @@ const COLLECTION = 'indexes';
 
 export type Index = {
   id: string;
-  wordId: string;
   wordFormIndexes: { [key: string]: boolean };
   wordPinyinIndexes: { [key: string]: boolean };
 };
 
 export const INITIAL_INDEX: Index = {
   id: '',
-  wordId: '',
   wordFormIndexes: {},
   wordPinyinIndexes: {},
 };
@@ -42,12 +40,10 @@ export const useHandleIndexes = () => {
       },
     []
   );
-  const _batchAddDocuments = useMemo(
+  const _batchSetDocuments = useMemo(
     () =>
-      async function <T extends { id: string }>(
-        values: Omit<T, 'id'>[]
-      ): Promise<string[]> {
-        return await batchAddDocuments({ db, colId: COLLECTION, values });
+      async function <T extends { id: string }>(values: T[]): Promise<boolean> {
+        return await batchSetDocuments({ db, colId: COLLECTION, values });
       },
     []
   );
@@ -70,48 +66,16 @@ export const useHandleIndexes = () => {
     });
   };
 
-  const updateIndexByWordId = async ({
-    value,
-    wordId,
-  }: {
-    wordId: string;
-    value: Omit<Index, 'id'>;
-  }) => {
-    const result = await _getDocumentsByQuery({
-      queries: [where('wordId', '==', wordId)],
-      buildValue: buildIndex,
-    });
-    if (!!result?.length) {
-      const index = result[0];
-      const newIndex: Index = { ...value, id: index.id };
-      return await _updateDocument(newIndex);
-    } else {
-      return null;
-    }
+  const updateIndex = async (value: Index) => {
+    return await _updateDocument(value);
   };
 
-  const batchAddIndexes = async (values: Omit<Index, 'id'>[]) => {
-    return await _batchAddDocuments(values);
+  const batchSetIndexes = async (values: Index[]) => {
+    return await _batchSetDocuments(values);
   };
 
-  const batchDeleteIndexesByWordIds = async (wordIds: string[]) => {
-    const ids: string[] = [];
-
-    await Promise.all(
-      wordIds.map(async (wordId) => {
-        const result = await _getDocumentsByQuery({
-          queries: [where('wordId', '==', wordId)],
-          buildValue: buildIndex,
-        });
-        if (!!result.length) {
-          ids.push(result[0].id);
-        }
-      })
-    );
-    if (!!ids.length) {
-      return await _batchDeleteDocuments(ids);
-    }
-    return true;
+  const batchDeleteIndexes = async (ids: string[]) => {
+    return await _batchDeleteDocuments(ids);
   };
 
   const getWordIdsByIndexes = async ({
@@ -147,22 +111,21 @@ export const useHandleIndexes = () => {
       queries,
       buildValue: buildIndex,
     });
-    const wordIds = indexes.map((index) => index.wordId);
+    const wordIds = indexes.map((index) => index.id);
     return wordIds;
   };
 
   return {
-    batchAddIndexes,
+    updateIndex,
+    batchSetIndexes,
+    batchDeleteIndexes,
     getWordIdsByIndexes,
-    updateIndexByWordId,
-    batchDeleteIndexesByWordIds,
   };
 };
 
 const buildIndex = (doc: DocumentData) => {
   const index: Index = {
     id: doc.id || '',
-    wordId: doc.data().wordId || '',
     wordFormIndexes: doc.data().wordFormIndexes || {},
     wordPinyinIndexes: doc.data().wordPinyinIndexes || {},
   };
@@ -170,9 +133,9 @@ const buildIndex = (doc: DocumentData) => {
 };
 
 export const word2Index = (word: Pick<Word, 'characters' | 'id'>) => {
-  const { characters } = word;
-  const index: Omit<Index, 'id'> = {
-    wordId: word.id,
+  const { id, characters } = word;
+  const index: Index = {
+    id,
     wordFormIndexes: {},
     wordPinyinIndexes: {},
   };

@@ -7,20 +7,18 @@ import {
   Button,
 } from '@mui/material';
 import React, { useContext } from 'react';
-import { NavigateFunction, useNavigate } from 'react-router-dom';
-import AppLayout from '../../layout/AppLayout';
+import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../services/context';
 import { useHandleIndexes } from '../../services/useIndexes';
-import { useHandleWordLists, WordList } from '../../services/useWordList';
+import { useHandleWordLists } from '../../services/useWordList';
 import { useHandleWords } from '../../services/useWords';
-import WordListRow from './components/WordListRow';
 import WordListsPageComponent from './components/WordListsPageComponent';
 
 const WordListsPage = () => {
   const navigate = useNavigate();
   const { wordLists, setWordListId } = useContext(AppContext);
   const { deleteWordList } = useHandleWordLists();
-  const { batchDeleteIndexesByWordIds } = useHandleIndexes();
+  const { batchDeleteIndexes } = useHandleIndexes();
   const { getWordsByWordListId, batchDeleteWords } = useHandleWords();
 
   const handleClickEdit = (wordListId: string) => {
@@ -47,7 +45,7 @@ const WordListsPage = () => {
       const words = await getWordsByWordListId(wordList.id);
       const wordIds = words.map((word) => word.id);
       batchDeleteWords(wordIds);
-      batchDeleteIndexesByWordIds(wordIds);
+      batchDeleteIndexes(wordIds);
     }
   };
 

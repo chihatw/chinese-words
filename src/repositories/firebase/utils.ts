@@ -398,6 +398,32 @@ export const batchAddDocuments = async <T extends { id: string }>({
     });
 };
 
+export const batchSetDocuments = async <T extends { id: string }>({
+  db,
+  colId,
+  values,
+}: {
+  db: Firestore;
+  colId: string;
+  values: T[];
+}): Promise<boolean> => {
+  const batch = writeBatch(db);
+  for (const value of values) {
+    const { id, ...omitted } = value;
+    batch.set(doc(db, colId, id), { ...omitted });
+  }
+  console.log(`set docs ${colId}`);
+  return await batch
+    .commit()
+    .then(() => {
+      return true;
+    })
+    .catch((e) => {
+      console.warn(e);
+      return false;
+    });
+};
+
 // ドキュメントの value フィールドの値を設定する（フィールド名固定）
 export const setDocumenValue = async <T>({
   db,

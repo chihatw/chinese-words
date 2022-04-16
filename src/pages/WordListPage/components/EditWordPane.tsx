@@ -21,7 +21,7 @@ const EditWordPane = ({
   const [word, setWord] = useState(INITIAL_WORD);
 
   const { updateWord } = useHandleWords();
-  const { updateIndexByWordId } = useHandleIndexes();
+  const { updateIndex } = useHandleIndexes();
 
   useEffect(() => {
     const input = word2String(superWord);
@@ -40,10 +40,7 @@ const EditWordPane = ({
     const result = await updateWord(word);
     if (!!result) {
       const index = word2Index(word);
-      const result = await updateIndexByWordId({
-        value: index,
-        wordId: word.id,
-      });
+      const result = await updateIndex(index);
       if (!!result) {
         callback();
       }

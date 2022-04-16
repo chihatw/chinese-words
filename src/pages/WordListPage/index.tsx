@@ -10,6 +10,7 @@ import {
   word2String,
   string2Word,
   useHandleWords,
+  INITIAL_WORD,
 } from '../../services/useWords';
 import WordRowContainer from './components/WordRowContainer';
 
@@ -17,7 +18,7 @@ const WordListPage = () => {
   const navigate = useNavigate();
   const { words: superWords, wordList } = useContext(AppContext);
   const { batchAddWords, batchDeleteWords } = useHandleWords();
-  const { batchDeleteIndexesByWordIds, batchAddIndexes } = useHandleIndexes();
+  const { batchDeleteIndexes, batchSetIndexes } = useHandleIndexes();
 
   const [input, setInput] = useState('');
   const [words, setWords] = useState<Word[]>([]);
@@ -41,7 +42,7 @@ const WordListPage = () => {
     const ids = superWords.map((word) => word.id).filter((i) => i);
     if (ids.length) {
       batchDeleteWords(ids);
-      batchDeleteIndexesByWordIds(ids);
+      batchDeleteIndexes(ids);
     }
     // 新規に追加
     const newWords: Omit<Word, 'id'>[] = [];
@@ -61,12 +62,12 @@ const WordListPage = () => {
       wordListId: '',
       id: wordIds[index],
     }));
-    const newIndexes: Omit<Index, 'id'>[] = [];
+    const newIndexes: Index[] = [];
     for (const word of _words) {
       const index = word2Index(word);
       newIndexes.push(index);
     }
-    batchAddIndexes(newIndexes);
+    batchSetIndexes(newIndexes);
   };
 
   return (
@@ -75,7 +76,10 @@ const WordListPage = () => {
       <div>
         <Button onClick={() => navigate('/lists')}>戻る</Button>
       </div>
-      <WordRow word={words.slice(-1)[0]} index={words.length - 1} />
+      <WordRow
+        word={words.slice(-1)[0] || INITIAL_WORD}
+        index={words.length - 1}
+      />
       <TextField
         multiline
         value={input}
