@@ -1,6 +1,7 @@
 import { Button, TextField } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import WordRow from '../../components/WordRow';
 import AppLayout from '../../layout/AppLayout';
 import { AppContext } from '../../services/context';
 import { Index, word2Index, useHandleIndexes } from '../../services/useIndexes';
@@ -74,11 +75,12 @@ const WordListPage = () => {
       <div>
         <Button onClick={() => navigate('/lists')}>戻る</Button>
       </div>
+      <WordRow word={words.slice(-1)[0]} index={words.length - 1} />
       <TextField
         multiline
         value={input}
         onChange={(e) => handleChangeInput(e.target.value)}
-        rows={20}
+        rows={6}
       />
       <Button onClick={handleSubmit}>submit</Button>
       {words.map((word, index) => (

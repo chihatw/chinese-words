@@ -73,6 +73,7 @@ const vowelGroups = [
     'ou',
     'iu',
     've',
+    'ue',
     'ie',
     'ua',
     'ia',
@@ -88,7 +89,7 @@ const vowels_2 = ['ang', 'ong', 'eng', 'ing']; // 4
 const vowels_3 = ['ai', 'ei', 'ui']; // 3
 const vowels_4 = ['ao', 'uo']; // 2
 const vowels_5 = ['ou', 'iu']; // 2
-const vowels_6 = ['ve', 'ie']; // 2
+const vowels_6 = ['ve', 'ie', 'ue']; // 3
 const vowels_7 = ['ua', 'ia']; // 2
 const vowels_8 = ['uan', 'van', 'ian']; // 3
 const vowels_9 = ['uang', 'iang']; // 2
