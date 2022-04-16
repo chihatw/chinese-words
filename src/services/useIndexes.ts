@@ -22,14 +22,20 @@ export type Index = {
   wordFormIndexes: { [key: string]: boolean };
   wordPinyinIndexes: { [key: string]: boolean };
   wordPinyinNoToneIndexes: { [key: string]: boolean };
+  wordVowelIndexes: { [key: string]: boolean };
+  wordConsonantIndexes: { [key: string]: boolean };
+  wordVowelToneIndexes: { [key: string]: boolean };
 };
 
 export const INITIAL_INDEX: Index = {
   id: '',
   wordId: '',
   wordFormIndexes: {},
+  wordVowelIndexes: {},
   wordPinyinIndexes: {},
+  wordConsonantIndexes: {},
   wordPinyinNoToneIndexes: {},
+  wordVowelToneIndexes: {},
 };
 
 export const useHandleIndexes = () => {
@@ -122,7 +128,13 @@ export const useHandleIndexes = () => {
     value,
   }: {
     max?: number;
-    type: 'pinyinNoTone' | 'form' | 'pinyin';
+    type:
+      | 'pinyinNoTone'
+      | 'form'
+      | 'pinyin'
+      | 'vowel'
+      | 'consonant'
+      | 'vowelTone';
     value: string;
   }): Promise<string[]> => {
     const queries = [];
@@ -141,6 +153,21 @@ export const useHandleIndexes = () => {
       case 'pinyin':
         for (const index of value.split(' ')) {
           queries.push(where(`wordPinyinIndexes.${index}`, '==', true));
+        }
+        break;
+      case 'vowel':
+        for (const index of value.split(' ')) {
+          queries.push(where(`wordVowelIndexes.${index}`, '==', true));
+        }
+        break;
+      case 'vowelTone':
+        for (const index of value.split(' ')) {
+          queries.push(where(`wordVowelToneIndexes.${index}`, '==', true));
+        }
+        break;
+      case 'consonant':
+        for (const index of value.split(' ')) {
+          queries.push(where(`wordConsonantIndexes.${index}`, '==', true));
         }
         break;
       default:
@@ -168,11 +195,14 @@ export const useHandleIndexes = () => {
 
 const buildIndex = (doc: DocumentData) => {
   const index: Index = {
-    id: doc.id,
-    wordId: doc.data().wordId,
-    wordFormIndexes: doc.data().wordFormIndexes,
-    wordPinyinIndexes: doc.data().wordPinyinIndexes,
-    wordPinyinNoToneIndexes: doc.data().wordPinyinNoToneIndexes,
+    id: doc.id || '',
+    wordId: doc.data().wordId || '',
+    wordFormIndexes: doc.data().wordFormIndexes || {},
+    wordPinyinIndexes: doc.data().wordPinyinIndexes || {},
+    wordPinyinNoToneIndexes: doc.data().wordPinyinNoToneIndexes || {},
+    wordVowelIndexes: doc.data().wordVowelIndexes || {},
+    wordConsonantIndexes: doc.data().wordConsonantIndexes || {},
+    wordVowelToneIndexes: doc.data().wordVowelToneIndexes || {},
   };
   return index;
 };
@@ -184,12 +214,18 @@ export const word2Index = (word: Pick<Word, 'characters' | 'id'>) => {
     wordFormIndexes: {},
     wordPinyinIndexes: {},
     wordPinyinNoToneIndexes: {},
+    wordVowelIndexes: {},
+    wordConsonantIndexes: {},
+    wordVowelToneIndexes: {},
   };
   for (const { form, pinyin } of characters) {
+    const { consonant, vowel, tone } = pinyin;
     index.wordFormIndexes[form] = true;
-    index.wordPinyinIndexes[pinyin] = true;
-    const pinyinNoTone = pinyin.replace(/[0-4]/g, '');
-    index.wordPinyinNoToneIndexes[pinyinNoTone] = true;
+    index.wordPinyinIndexes[consonant + vowel + tone] = true;
+    index.wordPinyinNoToneIndexes[consonant + vowel] = true;
+    index.wordVowelIndexes[vowel] = true;
+    index.wordConsonantIndexes[consonant] = true;
+    index.wordVowelToneIndexes[vowel + tone] = true;
   }
   return index;
 };

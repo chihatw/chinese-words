@@ -1,4 +1,6 @@
-export const string2Pinyin = (value: string) => {
+import { INITIAL_PINYIN, Pinyin } from './useWords';
+
+export const string2Pinyin = (value: string): Pinyin => {
   const tail = value.slice(-1);
   let tone = '';
   if (['0', '1', '2', '3', '4'].includes(tail)) {
@@ -10,7 +12,18 @@ export const string2Pinyin = (value: string) => {
   const remainder = valueNoTone.slice(consonant.length);
   const vowel = getVowel(remainder);
 
-  return !!vowel ? consonant + vowel + tone : '';
+  const pinyin: Pinyin = {
+    consonant,
+    vowel,
+    tone: !!vowel ? tone : '', // 四声 は 母音が必要
+  };
+
+  return pinyin;
+};
+
+export const pinyin2String = (pinyin: Pinyin): string => {
+  const { consonant, vowel, tone } = pinyin;
+  return consonant + vowel + tone;
 };
 
 const getVowel = (value: string) => {
@@ -38,7 +51,7 @@ const getConsonant = (value: string) => {
   return consonant;
 };
 
-const consonants_0 = ['bpmf', 'dtnl', 'zcs', 'r', 'jqx', 'gkh']
+const consonants_0 = ['bpmf', 'dtnl', 'zcs', 'r', 'jqx', 'gkh', 'yw']
   .join('')
   .split('');
 const consonants_1 = ['zh', 'ch', 'sh'];

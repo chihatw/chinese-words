@@ -1,13 +1,14 @@
 import { useTheme } from '@mui/system';
 import React from 'react';
+import { pinyin2String } from '../services/pinyins';
 import { Character } from '../services/useWords';
 
 const CharacterUnit = ({ character }: { character: Character }) => {
   const theme = useTheme();
   const { form, pinyin } = character;
   let mark = '　';
-  const last = pinyin.slice(-1);
-  switch (last) {
+  const tone = pinyin.tone;
+  switch (tone) {
     case '1':
       mark = '‾';
       break;
@@ -35,7 +36,7 @@ const CharacterUnit = ({ character }: { character: Character }) => {
           marginBottom: -8,
         }}
       >
-        {pinyin}
+        {pinyin2String(pinyin)}
       </div>
       <div
         style={{

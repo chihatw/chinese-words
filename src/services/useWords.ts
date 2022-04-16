@@ -15,17 +15,29 @@ import {
   getDocument,
   getDocumentsByQuery,
 } from '../repositories/firebase/utils';
+import { pinyin2String, string2Pinyin } from './pinyins';
 
 const COLLECTION = 'words';
 
+export type Pinyin = {
+  vowel: string;
+  consonant: string;
+  tone: string;
+};
+export const INITIAL_PINYIN: Pinyin = {
+  vowel: '',
+  consonant: '',
+  tone: '',
+};
+
 export type Character = {
   form: string;
-  pinyin: string;
+  pinyin: Pinyin;
 };
 
 export const INITIAL_CHARACTER: Character = {
   form: '',
-  pinyin: '',
+  pinyin: INITIAL_PINYIN,
 };
 
 export type Word = {
@@ -204,7 +216,9 @@ export const word2String = (word: Word) => {
   const lines: string[] = [];
   const { characters, sentence, japanese } = word;
   const chinese = characters.map((character) => character.form).join('');
-  const pinyins = characters.map((character) => character.pinyin).join(' ');
+  const pinyins = characters
+    .map((character) => pinyin2String(character.pinyin))
+    .join(' ');
   lines.push(chinese);
   lines.push(pinyins);
   lines.push(sentence);
@@ -251,9 +265,10 @@ const buildCharacters = ({
   const characters: Character[] = [];
   const forms = chinese.split('');
   forms.forEach((form, index) => {
+    const pinyin = string2Pinyin(pinyins[index] || '');
     const character: Character = {
       form,
-      pinyin: pinyins[index] || '',
+      pinyin,
     };
     characters.push(character);
   });
