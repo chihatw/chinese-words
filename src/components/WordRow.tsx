@@ -1,5 +1,6 @@
 import React from 'react';
-import { Character, Word } from '../services/useWords';
+import { Word } from '../services/useWords';
+import CharacterUnit from './CharacterUnit';
 
 const WordRow = ({
   word,
@@ -20,10 +21,10 @@ const WordRow = ({
     >
       <div
         style={{
-          marginRight: isPractice ? 4 : 16,
+          marginRight: 16,
           fontSize: 12,
           color: '#aaa',
-          marginTop: isPractice ? 20 : 0,
+          marginTop: isPractice ? 16 : 0,
         }}
       >
         {index + 1}
@@ -46,45 +47,3 @@ const WordRow = ({
 };
 
 export default WordRow;
-
-const CharacterUnit = ({ character }: { character: Character }) => {
-  const { form, pinyin } = character;
-  let mark = '　';
-  const last = pinyin.slice(-1);
-  switch (last) {
-    case '1':
-      mark = '‾';
-      break;
-    case '2':
-      mark = 'ˊ';
-      break;
-    case '3':
-      mark = 'ˇ';
-      break;
-    case '4':
-      mark = 'ˋ';
-      break;
-    case '0':
-      mark = '˙';
-      break;
-    default:
-  }
-  return (
-    <div style={{ display: 'grid', marginRight: 4 }}>
-      <div style={{ textAlign: 'center', fontSize: 8, color: '#aaa' }}>
-        {pinyin}
-      </div>
-      <div
-        style={{
-          textAlign: 'center',
-          fontSize: 32,
-          marginBottom: -28,
-          color: 'red',
-        }}
-      >
-        {mark}
-      </div>
-      <div style={{ textAlign: 'center' }}>{form}</div>
-    </div>
-  );
-};

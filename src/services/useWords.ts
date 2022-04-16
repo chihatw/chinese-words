@@ -18,6 +18,7 @@ import {
   batchDeleteDocuments,
   batchAddDocuments,
   getDocument,
+  getDocumentsByQuery,
 } from '../repositories/firebase/utils';
 
 const COLLECTION = 'words';
@@ -117,6 +118,20 @@ export const useHandleWords = () => {
       },
     []
   );
+  const _getDocumentsByQuery = async <T>({
+    queries,
+    buildValue,
+  }: {
+    queries?: QueryConstraint[];
+    buildValue: (value: DocumentData) => T;
+  }): Promise<T[]> => {
+    return await getDocumentsByQuery({
+      db,
+      colId: COLLECTION,
+      queries,
+      buildValue,
+    });
+  };
   const _updateDocument = useMemo(
     () =>
       async function <T extends { id: string }>(value: T): Promise<T | null> {
@@ -149,6 +164,13 @@ export const useHandleWords = () => {
     });
   };
 
+  const getWordsByWordListId = async (wordListId: string) => {
+    return await _getDocumentsByQuery({
+      queries: [where('wordListId', '==', wordListId)],
+      buildValue: buildWord,
+    });
+  };
+
   const updateWord = async (word: Word) => {
     return await _updateDocument(word);
   };
@@ -161,7 +183,13 @@ export const useHandleWords = () => {
     return await _batchDeleteDocuments(ids);
   };
 
-  return { getWord, updateWord, batchAddWords, batchDeleteWords };
+  return {
+    getWord,
+    updateWord,
+    batchAddWords,
+    batchDeleteWords,
+    getWordsByWordListId,
+  };
 };
 
 const buildWord = (doc: DocumentData) => {

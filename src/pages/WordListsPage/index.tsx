@@ -1,23 +1,27 @@
-import { Delete, Edit, Subject } from '@mui/icons-material';
 import {
   Table,
   TableHead,
   TableRow,
   TableBody,
   TableCell,
-  IconButton,
   Button,
 } from '@mui/material';
 import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { NavigateFunction, useNavigate } from 'react-router-dom';
 import AppLayout from '../../layout/AppLayout';
 import { AppContext } from '../../services/context';
+import { useHandleIndexes } from '../../services/useIndexes';
 import { useHandleWordLists, WordList } from '../../services/useWordList';
+import { useHandleWords } from '../../services/useWords';
+import WordListRow from './components/WordListRow';
+import WordListsPageComponent from './components/WordListsPageComponent';
 
 const WordListsPage = () => {
   const navigate = useNavigate();
   const { wordLists, setWordListId } = useContext(AppContext);
   const { deleteWordList } = useHandleWordLists();
+  const { batchDeleteIndexesByWordIds } = useHandleIndexes();
+  const { getWordsByWordListId, batchDeleteWords } = useHandleWords();
 
   const handleClickEdit = (wordListId: string) => {
     setWordListId(wordListId);
@@ -33,12 +37,17 @@ const WordListsPage = () => {
     }, 100);
   };
 
-  const handleClickDelete = (wordListId: string) => {
+  const handleClickDelete = async (wordListId: string) => {
     const wordList = wordLists.filter(
       (wordList) => wordList.id === wordListId
     )[0];
+
     if (window.confirm(`delete ${wordList.title}?`)) {
       deleteWordList(wordListId);
+      const words = await getWordsByWordListId(wordList.id);
+      const wordIds = words.map((word) => word.id);
+      batchDeleteWords(wordIds);
+      batchDeleteIndexesByWordIds(wordIds);
     }
   };
 
@@ -50,69 +59,15 @@ const WordListsPage = () => {
   };
 
   return (
-    <AppLayout>
-      <div>
-        <h1>WordLists</h1>
-        <Button onClick={() => navigate('/')}>戻る</Button>
-        <Button onClick={handleClickCreate}>新規作成</Button>
-      </div>
-      <Table size='small'>
-        <TableHead>
-          <TableRow>
-            <TableCell>title</TableCell>
-            <TableCell></TableCell>
-            <TableCell></TableCell>
-            <TableCell></TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {wordLists.map((wordList, index) => (
-            <WordListRow
-              key={index}
-              wordList={wordList}
-              handleOpenList={() => handleOpenList(wordList.id)}
-              handleClickEdit={() => handleClickEdit(wordList.id)}
-              handleClickDelete={() => handleClickDelete(wordList.id)}
-            />
-          ))}
-        </TableBody>
-      </Table>
-    </AppLayout>
+    <WordListsPageComponent
+      wordLists={wordLists}
+      navigate={navigate}
+      handleOpenList={handleOpenList}
+      handleClickEdit={handleClickEdit}
+      handleClickCreate={handleClickCreate}
+      handleClickDelete={handleClickDelete}
+    />
   );
 };
 
 export default WordListsPage;
-
-const WordListRow = ({
-  wordList,
-  handleOpenList,
-  handleClickEdit,
-  handleClickDelete,
-}: {
-  wordList: WordList;
-  handleOpenList: () => void;
-  handleClickEdit: () => void;
-  handleClickDelete: () => void;
-}) => {
-  const { title } = wordList;
-  return (
-    <TableRow>
-      <TableCell>{title}</TableCell>
-      <TableCell>
-        <IconButton onClick={handleClickEdit}>
-          <Edit />
-        </IconButton>
-      </TableCell>
-      <TableCell>
-        <IconButton onClick={handleOpenList}>
-          <Subject />
-        </IconButton>
-      </TableCell>
-      <TableCell>
-        <IconButton onClick={handleClickDelete}>
-          <Delete />
-        </IconButton>
-      </TableCell>
-    </TableRow>
-  );
-};

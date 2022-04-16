@@ -13,14 +13,16 @@ const WordListPane = ({ isPractice }: { isPractice?: boolean }) => {
     return (
       <div style={{ display: 'grid', rowGap: 16 }}>
         <div>{`${title.slice(0, 10)}... ${dateStr}`}</div>
-        {words.map((word, index) => (
-          <WordRow
-            key={index}
-            word={word}
-            index={index}
-            isPractice={isPractice}
-          />
-        ))}
+        <div style={{ display: 'grid', rowGap: 4 }}>
+          {words.map((word, index) => (
+            <WordRow
+              key={index}
+              word={word}
+              index={index}
+              isPractice={isPractice}
+            />
+          ))}
+        </div>
       </div>
     );
   } else {
