@@ -5,15 +5,14 @@ import WordRow from '../../components/WordRow';
 import AppLayout from '../../layout/AppLayout';
 import { pinyin2String, string2Pinyin } from '../../services/pinyins';
 import { useHandleIndexes } from '../../services/useIndexes';
-import { useHandleWords, Word } from '../../services/useWords';
+import { useHandleWords, Word, Pinyin } from '../../services/useWords';
 
 const SearchPage = () => {
   const navigate = useNavigate();
   const [formsInput, setFormsInput] = useState('');
   const [pinyinsInput, setPinyinsInput] = useState('');
-  const [consonantInput, setConsonantInput] = useState('');
-  const [vowelInput, setVowelInput] = useState('');
-  const [vowelToneInput, setVowelToneInput] = useState('');
+  const [pinyins, setPinyins] = useState<Pinyin[]>([]);
+  const [forms, setForms] = useState<string[]>([]);
   const [wordIds, setWordIds] = useState<string[]>([]);
   const [words, setWords] = useState<Word[]>([]);
   const { getWord } = useHandleWords();
@@ -31,23 +30,30 @@ const SearchPage = () => {
             }
           })
         );
-        setWords(words);
+        if (forms.length || pinyins.length) {
+          setWords(words);
+        } else {
+          setWords([]);
+        }
       };
       fetchData();
     } else {
       setWords([]);
     }
-  }, [wordIds]);
+  }, [wordIds, forms, pinyins]);
 
   // 文字で検索
   const handleChangeFormsInput = async (value: string) => {
     setFormsInput(value);
+    const forms = value.split('');
+    setForms(forms);
+    setPinyins([]);
     setPinyinsInput('');
-    if (!!value) {
+    if (!!forms.length) {
       const wordIds = await getWordIdsByIndexes({
         max: 10,
         type: 'form',
-        value,
+        indexes: forms,
       });
       setWordIds(wordIds);
     } else {
@@ -58,83 +64,21 @@ const SearchPage = () => {
   // 拼音で検索
   const handleChangePinyinsInput = async (value: string) => {
     setPinyinsInput(value);
-    const pinyins = value.split(' ').map((str) => string2Pinyin(str));
-    const pinyinStr = pinyins
-      .map((pinyin) => pinyin2String(pinyin))
-      .filter((i) => i)
-      .join(' ');
     setFormsInput('');
-    if (!!pinyinStr) {
-      let wordIds: string[] = [];
-      const lastPinyin = pinyins.slice(-1)[0];
+    setForms([]);
+    const pinyins = value
+      .split(' ')
+      .map((str) => string2Pinyin(str))
+      .filter((pinyin) => !!pinyin2String(pinyin));
+    setPinyins(pinyins);
 
-      // 子音＋母音＋四声
-      if (!!lastPinyin.tone) {
-        wordIds = await getWordIdsByIndexes({
-          value: pinyinStr,
-          max: 10,
-          type: 'pinyin', // 子音＋母音＋四声
-        });
-      } else {
-        wordIds = await getWordIdsByIndexes({
-          max: 10,
-          type: 'pinyinNoTone', // 子音＋母音
-          value: pinyinStr,
-        });
-      }
-      // TODO string2Pinyin で子音だけでも返せるようにする？
-      setWordIds(wordIds);
-    } else {
-      setWordIds([]);
-    }
-  };
+    if (!!pinyins.length) {
+      const wordIds: string[] = await getWordIdsByIndexes({
+        indexes: pinyins.map((pinyin) => pinyin2String(pinyin)),
+        max: 10,
+        type: 'pinyin',
+      });
 
-  const handleChangeVowelInput = async (value: string) => {
-    setVowelInput(value);
-    const pinyins = value.split(' ').map((str) => string2Pinyin(str));
-    const vowelStr = pinyins
-      .filter(({ vowel }) => vowel)
-      .map(({ vowel }) => vowel)
-      .join(' ');
-    if (!!vowelStr) {
-      const wordIds = await getWordIdsByIndexes({
-        value: vowelStr,
-        max: 10,
-        type: 'vowel',
-      });
-      setWordIds(wordIds);
-    } else {
-      setWordIds([]);
-    }
-  };
-  const handleChangeVowelToneInput = async (value: string) => {
-    setVowelToneInput(value);
-    const pinyins = value.split(' ').map((str) => string2Pinyin(str));
-    const vowelToneStr = pinyins
-      .filter((pinyin) => pinyin.vowel)
-      .map((pinyin) => pinyin.vowel + pinyin.tone)
-      .join(' ');
-    if (!!vowelToneStr) {
-      const wordIds = await getWordIdsByIndexes({
-        value: vowelToneStr,
-        max: 10,
-        type: 'vowelTone',
-      });
-      setWordIds(wordIds);
-    } else {
-      setWordIds([]);
-    }
-  };
-
-  // 子音のみでの検索は、入力した値をそのまま検索にかける　たぶん使わない
-  const handleChangeConsonantInput = async (value: string) => {
-    setConsonantInput(value);
-    if (!!value) {
-      const wordIds = await getWordIdsByIndexes({
-        value,
-        max: 10,
-        type: 'consonant',
-      });
       setWordIds(wordIds);
     } else {
       setWordIds([]);
@@ -144,7 +88,7 @@ const SearchPage = () => {
   return (
     <AppLayout>
       <div>
-        <h1>Search Words</h1>
+        <h1>Search</h1>
         <Button onClick={() => navigate('/')}>戻る</Button>
       </div>
       <TextField
@@ -161,24 +105,29 @@ const SearchPage = () => {
           handleChangePinyinsInput(e.target.value);
         }}
       />
-      <TextField
-        size='small'
-        label='母音'
-        value={vowelInput}
-        onChange={(e) => handleChangeVowelInput(e.target.value)}
-      />
-      <TextField
-        size='small'
-        label='母音＋四声'
-        value={vowelToneInput}
-        onChange={(e) => handleChangeVowelToneInput(e.target.value)}
-      />
-      <TextField
-        size='small'
-        label='子音'
-        value={consonantInput}
-        onChange={(e) => handleChangeConsonantInput(e.target.value)}
-      />
+      <div
+        style={{
+          display: 'flex',
+          padding: '0 16px',
+          color: 'darkgreen',
+          alignItems: 'center',
+        }}
+      >
+        <div style={{ color: '#aaa', marginRight: 8 }}>検索Index: </div>
+        {pinyins.map(({ consonant, vowel, tone }, index) => (
+          <div
+            key={index}
+            style={{ marginRight: 4 }}
+          >{`${consonant}${vowel}${tone}${
+            pinyins[index + 1] ? ', ' : ''
+          }`}</div>
+        ))}
+        {forms.map((form, index) => (
+          <div key={index} style={{ marginRight: 4 }}>{`${form}${
+            forms[index + 1] ? ',' : ''
+          }`}</div>
+        ))}
+      </div>
       {words.map((word, index) => (
         <WordRow key={index} index={index} word={word} />
       ))}

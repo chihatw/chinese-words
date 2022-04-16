@@ -21,21 +21,13 @@ export type Index = {
   wordId: string;
   wordFormIndexes: { [key: string]: boolean };
   wordPinyinIndexes: { [key: string]: boolean };
-  wordPinyinNoToneIndexes: { [key: string]: boolean };
-  wordVowelIndexes: { [key: string]: boolean };
-  wordConsonantIndexes: { [key: string]: boolean };
-  wordVowelToneIndexes: { [key: string]: boolean };
 };
 
 export const INITIAL_INDEX: Index = {
   id: '',
   wordId: '',
   wordFormIndexes: {},
-  wordVowelIndexes: {},
   wordPinyinIndexes: {},
-  wordConsonantIndexes: {},
-  wordPinyinNoToneIndexes: {},
-  wordVowelToneIndexes: {},
 };
 
 export const useHandleIndexes = () => {
@@ -125,49 +117,23 @@ export const useHandleIndexes = () => {
   const getWordIdsByIndexes = async ({
     max,
     type,
-    value,
+    indexes: _indexes,
   }: {
     max?: number;
-    type:
-      | 'pinyinNoTone'
-      | 'form'
-      | 'pinyin'
-      | 'vowel'
-      | 'consonant'
-      | 'vowelTone';
-    value: string;
+    type: 'form' | 'pinyin';
+    indexes: string[];
   }): Promise<string[]> => {
     const queries = [];
 
     switch (type) {
-      case 'pinyinNoTone':
-        for (const index of value.split(' ')) {
-          queries.push(where(`wordPinyinNoToneIndexes.${index}`, '==', true));
-        }
-        break;
       case 'form':
-        for (const index of value.split('')) {
+        for (const index of _indexes) {
           queries.push(where(`wordFormIndexes.${index}`, '==', true));
         }
         break;
       case 'pinyin':
-        for (const index of value.split(' ')) {
+        for (const index of _indexes) {
           queries.push(where(`wordPinyinIndexes.${index}`, '==', true));
-        }
-        break;
-      case 'vowel':
-        for (const index of value.split(' ')) {
-          queries.push(where(`wordVowelIndexes.${index}`, '==', true));
-        }
-        break;
-      case 'vowelTone':
-        for (const index of value.split(' ')) {
-          queries.push(where(`wordVowelToneIndexes.${index}`, '==', true));
-        }
-        break;
-      case 'consonant':
-        for (const index of value.split(' ')) {
-          queries.push(where(`wordConsonantIndexes.${index}`, '==', true));
         }
         break;
       default:
@@ -199,10 +165,6 @@ const buildIndex = (doc: DocumentData) => {
     wordId: doc.data().wordId || '',
     wordFormIndexes: doc.data().wordFormIndexes || {},
     wordPinyinIndexes: doc.data().wordPinyinIndexes || {},
-    wordPinyinNoToneIndexes: doc.data().wordPinyinNoToneIndexes || {},
-    wordVowelIndexes: doc.data().wordVowelIndexes || {},
-    wordConsonantIndexes: doc.data().wordConsonantIndexes || {},
-    wordVowelToneIndexes: doc.data().wordVowelToneIndexes || {},
   };
   return index;
 };
@@ -213,19 +175,15 @@ export const word2Index = (word: Pick<Word, 'characters' | 'id'>) => {
     wordId: word.id,
     wordFormIndexes: {},
     wordPinyinIndexes: {},
-    wordPinyinNoToneIndexes: {},
-    wordVowelIndexes: {},
-    wordConsonantIndexes: {},
-    wordVowelToneIndexes: {},
   };
   for (const { form, pinyin } of characters) {
     const { consonant, vowel, tone } = pinyin;
     index.wordFormIndexes[form] = true;
     index.wordPinyinIndexes[consonant + vowel + tone] = true;
-    index.wordPinyinNoToneIndexes[consonant + vowel] = true;
-    index.wordVowelIndexes[vowel] = true;
-    index.wordConsonantIndexes[consonant] = true;
-    index.wordVowelToneIndexes[vowel + tone] = true;
+    index.wordPinyinIndexes[consonant + vowel] = true;
+    index.wordPinyinIndexes[vowel + tone] = true;
+    index.wordPinyinIndexes[vowel] = true;
+    index.wordPinyinIndexes[consonant] = true;
   }
   return index;
 };
