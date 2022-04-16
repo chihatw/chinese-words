@@ -1,17 +1,16 @@
-import { Button, Container, TextField } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import WordRow from '../../components/WordRow';
 import AppLayout from '../../layout/AppLayout';
 import { AppContext } from '../../services/context';
+import { Index, word2Index, useHandleIndexes } from '../../services/useIndexes';
 import {
-  Index,
-  useHandleIndexes,
-  words2Indexes,
-} from '../../services/useIndexes';
-import { Character, useHandleWords, Word } from '../../services/useWords';
-
-type OmittedWord = Omit<Word, 'id' | 'createdAt' | 'wordListId'>;
+  Word,
+  word2String,
+  string2Word,
+  useHandleWords,
+} from '../../services/useWords';
+import WordRowContainer from './components/WordRowContainer';
 
 const WordListPage = () => {
   const navigate = useNavigate();
@@ -20,21 +19,20 @@ const WordListPage = () => {
   const { batchDeleteIndexesByWordIds, batchAddIndexes } = useHandleIndexes();
 
   const [input, setInput] = useState('');
-  const [words, setWords] = useState<OmittedWord[]>([]);
+  const [words, setWords] = useState<Word[]>([]);
 
   useEffect(() => {
     const input = stringifyWords(superWords);
     setInput(input);
-    const words = parseWords(input);
+    const words = parseWords({ value: input, words: superWords });
     setWords(words);
   }, [superWords]);
 
   const handleChangeInput = (input: string) => {
     setInput(input);
 
-    const words: OmittedWord[] = parseWords(input);
-    console.log(words);
-    setWords(words);
+    const newWords = parseWords({ value: input, words });
+    setWords(newWords);
   };
 
   const handleSubmit = async () => {
@@ -62,7 +60,11 @@ const WordListPage = () => {
       wordListId: '',
       id: wordIds[index],
     }));
-    const newIndexes: Omit<Index, 'id'>[] = words2Indexes(_words);
+    const newIndexes: Omit<Index, 'id'>[] = [];
+    for (const word of _words) {
+      const index = word2Index(word);
+      newIndexes.push(index);
+    }
     batchAddIndexes(newIndexes);
   };
 
@@ -79,11 +81,9 @@ const WordListPage = () => {
         rows={20}
       />
       <Button onClick={handleSubmit}>submit</Button>
-      <div>
-        {words.map((word, index) => (
-          <WordRow key={index} word={word} index={index} />
-        ))}
-      </div>
+      {words.map((word, index) => (
+        <WordRowContainer word={word} key={index} index={index} />
+      ))}
     </AppLayout>
   );
 };
@@ -91,59 +91,28 @@ const WordListPage = () => {
 export default WordListPage;
 
 const stringifyWords = (words: Word[]) => {
-  const lines: string[] = [];
+  let lines: string[] = [];
   for (const word of words) {
-    const { characters, sentence, japanese } = word;
-    const chinese = characters.map((character) => character.form).join('');
-    const pinyins = characters.map((character) => character.pinyin).join(' ');
-    lines.push(chinese);
-    lines.push(pinyins);
-    lines.push(sentence);
-    lines.push(japanese);
+    const _lines = word2String(word);
+    lines = lines.concat(_lines);
   }
   return lines.join('\n');
 };
 
-const parseWords = (value: string) => {
-  const words: OmittedWord[] = [];
+const parseWords = ({ value, words }: { value: string; words: Word[] }) => {
+  const newWords: Word[] = [];
   const lines = value.split('\n');
   let index = 0;
   for (let i = 0; i < lines.length; i += 4) {
-    const chinese = lines[i];
-    const pinyins = lines[i + 1]?.split(' ') || [];
-    const sentence = lines[i + 2] || '';
-    const japanese = lines[i + 3] || '';
-
-    const characters = buildCharacters({ chinese, pinyins });
-
-    const word: OmittedWord = {
-      index,
-      characters,
-      sentence,
-      japanese,
-    };
-    words.push(word);
+    const value = [
+      lines[i] || '',
+      lines[i + 1] || '',
+      lines[i + 2] || '',
+      lines[i + 3] || '',
+    ].join('\n');
+    const newWord = string2Word({ value, word: words[index], index });
+    newWords.push(newWord);
     index++;
   }
-  return words;
-};
-
-const buildCharacters = ({
-  chinese,
-  pinyins,
-}: {
-  chinese: string;
-  pinyins: string[];
-}) => {
-  const characters: Character[] = [];
-  const forms = chinese.split('');
-  forms.forEach((form, index) => {
-    const character: Character = {
-      form,
-      pinyin: pinyins[index] || '',
-    };
-    characters.push(character);
-  });
-
-  return characters;
+  return newWords;
 };

@@ -6,14 +6,13 @@ const WordListPane = ({ isPractice }: { isPractice?: boolean }) => {
   const { words, wordList } = useContext(AppContext);
   const { title, uploadedAt } = wordList;
   const date = new Date(uploadedAt);
+  const dateStr = `${date.getFullYear()}/${
+    date.getMonth() + 1
+  }/${date.getDate()}`;
   if (!!wordList.id) {
     return (
       <div style={{ display: 'grid', rowGap: 16 }}>
-        <div>{title}</div>
-        <div>{`${date.getFullYear()}/${
-          date.getMonth() + 1
-        }/${date.getDate()} `}</div>
-
+        <div>{`${title.slice(0, 10)}... ${dateStr}`}</div>
         {words.map((word, index) => (
           <WordRow
             key={index}

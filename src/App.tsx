@@ -6,7 +6,7 @@ import { useWords } from './services/useWords';
 
 function App() {
   const [wordListId, setWordListId] = useState('');
-  const { wordList, wordLists } = useWordList(wordListId);
+  const { wordList, wordLists } = useWordList({ wordListId, setWordListId });
   const { words } = useWords(wordListId);
   return (
     <AppContext.Provider value={{ setWordListId, wordList, wordLists, words }}>

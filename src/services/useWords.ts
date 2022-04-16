@@ -42,6 +42,8 @@ export type Word = {
   japanese: string;
 };
 
+export type OmittedWord = Omit<Word, 'id' | 'createdAt' | 'wordListId'>;
+
 export const INITIAL_WORD: Word = {
   id: '',
   createdAt: 0,
@@ -115,6 +117,17 @@ export const useHandleWords = () => {
       },
     []
   );
+  const _updateDocument = useMemo(
+    () =>
+      async function <T extends { id: string }>(value: T): Promise<T | null> {
+        return await updateDocument({
+          db,
+          colId: COLLECTION,
+          value,
+        });
+      },
+    []
+  );
   const _batchAddDocuments = useMemo(
     () =>
       async function <T extends { id: string }>(
@@ -136,6 +149,10 @@ export const useHandleWords = () => {
     });
   };
 
+  const updateWord = async (word: Word) => {
+    return await _updateDocument(word);
+  };
+
   const batchAddWords = async (words: Omit<Word, 'id'>[]) => {
     return await _batchAddDocuments(words);
   };
@@ -144,7 +161,7 @@ export const useHandleWords = () => {
     return await _batchDeleteDocuments(ids);
   };
 
-  return { getWord, batchAddWords, batchDeleteWords };
+  return { getWord, updateWord, batchAddWords, batchDeleteWords };
 };
 
 const buildWord = (doc: DocumentData) => {
@@ -158,4 +175,65 @@ const buildWord = (doc: DocumentData) => {
     japanese: doc.data().japanese,
   };
   return word;
+};
+
+export const word2String = (word: Word) => {
+  const lines: string[] = [];
+  const { characters, sentence, japanese } = word;
+  const chinese = characters.map((character) => character.form).join('');
+  const pinyins = characters.map((character) => character.pinyin).join(' ');
+  lines.push(chinese);
+  lines.push(pinyins);
+  lines.push(sentence);
+  lines.push(japanese);
+  return lines.join('\n');
+};
+
+export const string2Word = ({
+  value,
+  word,
+  index,
+}: {
+  value: string;
+  word?: Word;
+  index?: number;
+}) => {
+  const lines = value.split('\n');
+  const chinese = lines[0];
+  const pinyins = lines[1]?.split(' ') || [];
+  const sentence = lines[2] || '';
+  const japanese = lines[3] || '';
+
+  const characters = buildCharacters({ chinese, pinyins });
+
+  const newWord: Word = {
+    index: word?.index || index || 0,
+    characters,
+    sentence,
+    japanese,
+    id: word?.id || '',
+    createdAt: word?.createdAt || 0,
+    wordListId: word?.wordListId || '',
+  };
+  return newWord;
+};
+
+const buildCharacters = ({
+  chinese,
+  pinyins,
+}: {
+  chinese: string;
+  pinyins: string[];
+}) => {
+  const characters: Character[] = [];
+  const forms = chinese.split('');
+  forms.forEach((form, index) => {
+    const character: Character = {
+      form,
+      pinyin: pinyins[index] || '',
+    };
+    characters.push(character);
+  });
+
+  return characters;
 };

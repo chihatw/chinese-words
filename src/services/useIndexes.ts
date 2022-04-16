@@ -10,6 +10,7 @@ import {
   batchDeleteDocuments,
   batchAddDocuments,
   getDocumentsByQuery,
+  updateDocument,
 } from '../repositories/firebase/utils';
 import { Word } from './useWords';
 
@@ -32,6 +33,17 @@ export const INITIAL_INDEX: Index = {
 };
 
 export const useHandleIndexes = () => {
+  const _updateDocument = useMemo(
+    () =>
+      async function <T extends { id: string }>(value: T): Promise<T | null> {
+        return await updateDocument({
+          db,
+          colId: COLLECTION,
+          value,
+        });
+      },
+    []
+  );
   const _batchAddDocuments = useMemo(
     () =>
       async function <T extends { id: string }>(
@@ -58,6 +70,26 @@ export const useHandleIndexes = () => {
       queries,
       buildValue,
     });
+  };
+
+  const updateIndexByWordId = async ({
+    value,
+    wordId,
+  }: {
+    wordId: string;
+    value: Omit<Index, 'id'>;
+  }) => {
+    const result = await _getDocumentsByQuery({
+      queries: [where('wordId', '==', wordId)],
+      buildValue: buildIndex,
+    });
+    if (!!result?.length) {
+      const index = result[0];
+      const newIndex: Index = { ...value, id: index.id };
+      return await _updateDocument(newIndex);
+    } else {
+      return null;
+    }
   };
 
   const batchAddIndexes = async (values: Omit<Index, 'id'>[]) => {
@@ -129,6 +161,7 @@ export const useHandleIndexes = () => {
   return {
     batchAddIndexes,
     getWordIdsByIndexes,
+    updateIndexByWordId,
     batchDeleteIndexesByWordIds,
   };
 };
@@ -144,23 +177,19 @@ const buildIndex = (doc: DocumentData) => {
   return index;
 };
 
-export const words2Indexes = (words: Word[]) => {
-  const indexes: Omit<Index, 'id'>[] = [];
-  for (const word of words) {
-    const { characters } = word;
-    const newIndex: Omit<Index, 'id'> = {
-      wordId: word.id,
-      wordFormIndexes: {},
-      wordPinyinIndexes: {},
-      wordPinyinNoToneIndexes: {},
-    };
-    for (const { form, pinyin } of characters) {
-      newIndex.wordFormIndexes[form] = true;
-      newIndex.wordPinyinIndexes[pinyin] = true;
-      const pinyinNoTone = pinyin.replace(/[1-4]/g, '');
-      newIndex.wordPinyinNoToneIndexes[pinyinNoTone] = true;
-    }
-    indexes.push(newIndex);
+export const word2Index = (word: Pick<Word, 'characters' | 'id'>) => {
+  const { characters } = word;
+  const index: Omit<Index, 'id'> = {
+    wordId: word.id,
+    wordFormIndexes: {},
+    wordPinyinIndexes: {},
+    wordPinyinNoToneIndexes: {},
+  };
+  for (const { form, pinyin } of characters) {
+    index.wordFormIndexes[form] = true;
+    index.wordPinyinIndexes[pinyin] = true;
+    const pinyinNoTone = pinyin.replace(/[0-4]/g, '');
+    index.wordPinyinNoToneIndexes[pinyinNoTone] = true;
   }
-  return indexes;
+  return index;
 };

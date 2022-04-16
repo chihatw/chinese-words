@@ -32,7 +32,14 @@ export const INITIAL_WORD_LIST: WordList = {
   uploadedAt: 0,
 };
 
-export const useWordList = (wordlistId: string) => {
+export const useWordList = ({
+  wordListId,
+  setWordListId,
+}: {
+  wordListId: string;
+  setWordListId: (value: string) => void;
+}) => {
+  const [initializing, setInitializing] = useState(true);
   const [wordList, setWordList] = useState(INITIAL_WORD_LIST);
   const [wordLists, setWordLists] = useState<WordList[]>([]);
 
@@ -59,15 +66,23 @@ export const useWordList = (wordlistId: string) => {
   );
 
   useEffect(() => {
-    if (!wordlistId) {
-      setWordList(INITIAL_WORD_LIST);
+    if (!wordListId) {
+      let wordList = INITIAL_WORD_LIST;
+      if (initializing && wordLists.length) {
+        wordList = wordLists[0];
+        setWordListId(wordList.id);
+        console.log('initialzed wordListId');
+        setInitializing(false);
+      } else {
+        setWordList(wordList);
+      }
     } else {
       const wordList =
-        wordLists.filter((wordList) => wordList.id === wordlistId)[0] ??
+        wordLists.filter((wordList) => wordList.id === wordListId)[0] ??
         INITIAL_WORD_LIST;
       setWordList(wordList);
     }
-  }, [wordlistId, wordLists]);
+  }, [wordListId, wordLists, initializing]);
 
   useEffect(() => {
     const unsub = _snapshotCollection({

@@ -7,7 +7,7 @@ const WordListsPane = () => {
   const { wordLists } = useContext(AppContext);
   return (
     <div>
-      <div>wordLists</div>
+      <div>単語リスト一覧</div>
       {wordLists.map((wordList, index) => (
         <WordListRow key={index} wordList={wordList} />
       ))}
@@ -15,9 +15,16 @@ const WordListsPane = () => {
   );
 };
 const WordListRow = ({ wordList }: { wordList: WordList }) => {
-  const { title, id } = wordList;
+  const { id, uploadedAt } = wordList;
+  const date = new Date(uploadedAt);
   const { setWordListId } = useContext(AppContext);
-  return <Button onClick={() => setWordListId(id)}>{title}</Button>;
+  return (
+    <div>
+      <Button onClick={() => setWordListId(id)}>{`${date.getFullYear()}/${
+        date.getMonth() + 1
+      }/${date.getDate()}`}</Button>
+    </div>
+  );
 };
 
 export default WordListsPane;

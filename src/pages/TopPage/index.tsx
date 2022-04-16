@@ -8,15 +8,27 @@ const TopPage = () => {
   return (
     <AppLayout>
       <h1>Top Page</h1>
-      <div>
-        <Button onClick={() => navigate('/lists')}>wordLists</Button>
-      </div>
-      <div>
-        <Button onClick={() => navigate('/practice')}>Practice</Button>
-      </div>
-      <div>
-        <Button onClick={() => navigate('/search')}>Search words</Button>
-      </div>
+
+      <Button
+        onClick={() => navigate('/practice')}
+        sx={{ justifyContent: 'flex-start' }}
+      >
+        Practice
+      </Button>
+
+      <Button
+        onClick={() => navigate('/lists')}
+        sx={{ justifyContent: 'flex-start' }}
+      >
+        Lists
+      </Button>
+
+      <Button
+        onClick={() => navigate('/search')}
+        sx={{ justifyContent: 'flex-start' }}
+      >
+        Search
+      </Button>
     </AppLayout>
   );
 };
