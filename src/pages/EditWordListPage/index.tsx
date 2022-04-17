@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../layout/AppLayout';
 import { AppContext } from '../../services/context';
-import { useHandleWordLists, WordList } from '../../services/useWordList';
+import { useHandleWordLists, WordList } from '../../hooks/useWordList';
 
 const EditWordListPage = () => {
   const navigate = useNavigate();

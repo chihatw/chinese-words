@@ -1,6 +1,6 @@
 import { createContext } from 'react';
-import { INITIAL_WORD_LIST, WordList } from './useWordList';
-import { Word } from './useWords';
+import { INITIAL_WORD_LIST, WordList } from '../hooks/useWordList';
+import { Word } from '../hooks/useWords';
 
 export const AppContext = createContext<{
   setWordListId: (value: string) => void;

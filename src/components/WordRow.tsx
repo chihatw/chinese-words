@@ -1,5 +1,5 @@
 import React from 'react';
-import { Word } from '../services/useWords';
+import { Word } from '../hooks/useWords';
 import CharacterUnit from './CharacterUnit';
 
 const WordRow = ({

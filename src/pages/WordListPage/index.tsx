@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import WordRow from '../../components/WordRow';
 import AppLayout from '../../layout/AppLayout';
 import { AppContext } from '../../services/context';
-import { Index, word2Index, useHandleIndexes } from '../../services/useIndexes';
+import { Index, word2Index, useHandleIndexes } from '../../hooks/useIndexes';
 import {
   Word,
   word2String,
   string2Word,
   useHandleWords,
   INITIAL_WORD,
-} from '../../services/useWords';
+} from '../../hooks/useWords';
 import WordRowContainer from './components/WordRowContainer';
 
 const WordListPage = () => {

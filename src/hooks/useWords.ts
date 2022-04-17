@@ -15,7 +15,7 @@ import {
   getDocument,
   getDocumentsByQuery,
 } from '../repositories/firebase/utils';
-import { pinyin2String, string2Pinyin } from './pinyins';
+import { getConsonant, getVowel } from '../services/pinyins';
 
 const COLLECTION = 'words';
 
@@ -274,4 +274,30 @@ const buildCharacters = ({
   });
 
   return characters;
+};
+
+export const pinyin2String = (pinyin: Pinyin): string => {
+  const { consonant, vowel, tone } = pinyin;
+  return consonant + vowel + tone;
+};
+
+export const string2Pinyin = (value: string): Pinyin => {
+  const tail = value.slice(-1);
+  let tone = '';
+  if (['0', '1', '2', '3', '4'].includes(tail)) {
+    tone = tail;
+  }
+
+  const valueNoTone = value.slice(0, value.length - tone.length);
+  const consonant = getConsonant(valueNoTone);
+  const remainder = valueNoTone.slice(consonant.length);
+  const vowel = getVowel(remainder);
+
+  const pinyin: Pinyin = {
+    consonant,
+    vowel,
+    tone: !!vowel ? tone : '', // 四声 は 母音が必要
+  };
+
+  return pinyin;
 };

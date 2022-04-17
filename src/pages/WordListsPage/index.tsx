@@ -9,9 +9,9 @@ import {
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../services/context';
-import { useHandleIndexes } from '../../services/useIndexes';
-import { useHandleWordLists } from '../../services/useWordList';
-import { useHandleWords } from '../../services/useWords';
+import { useHandleIndexes } from '../../hooks/useIndexes';
+import { useHandleWordLists } from '../../hooks/useWordList';
+import { useHandleWords } from '../../hooks/useWords';
 import WordListsPageComponent from './components/WordListsPageComponent';
 
 const WordListsPage = () => {

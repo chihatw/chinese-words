@@ -1,7 +1,7 @@
 import { Button } from '@mui/material';
 import React, { useContext } from 'react';
 import { AppContext } from '../../../services/context';
-import { WordList } from '../../../services/useWordList';
+import { WordList } from '../../../hooks/useWordList';
 
 const WordListsPane = () => {
   const { wordLists } = useContext(AppContext);

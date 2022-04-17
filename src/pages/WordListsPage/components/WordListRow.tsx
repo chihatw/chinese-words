@@ -1,7 +1,7 @@
 import { Delete, Edit, Subject } from '@mui/icons-material';
 import React from 'react';
 import { TableRow, TableCell, IconButton } from '@mui/material';
-import { WordList } from '../../../services/useWordList';
+import { WordList } from '../../../hooks/useWordList';
 
 const WordListRow = ({
   wordList,

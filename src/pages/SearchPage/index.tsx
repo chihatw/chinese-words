@@ -3,9 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WordRow from '../../components/WordRow';
 import AppLayout from '../../layout/AppLayout';
-import { pinyin2String, string2Pinyin } from '../../services/pinyins';
-import { useHandleIndexes } from '../../services/useIndexes';
-import { useHandleWords, Word, Pinyin } from '../../services/useWords';
+import { useHandleIndexes } from '../../hooks/useIndexes';
+import {
+  Pinyin,
+  useHandleWords,
+  Word,
+  pinyin2String,
+  string2Pinyin,
+} from '../../hooks/useWords';
 
 const SearchPage = () => {
   const navigate = useNavigate();

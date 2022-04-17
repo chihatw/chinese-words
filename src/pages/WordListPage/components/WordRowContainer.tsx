@@ -2,7 +2,7 @@ import { Edit } from '@mui/icons-material';
 import { Collapse, IconButton } from '@mui/material';
 import React, { useState } from 'react';
 import WordRow from '../../../components/WordRow';
-import { Word } from '../../../services/useWords';
+import { Word } from '../../../hooks/useWords';
 import EditWordPane from './EditWordPane';
 
 const WordRowContainer = ({ index, word }: { word: Word; index: number }) => {

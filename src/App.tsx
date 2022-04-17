@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import AppRoutes from './routes/AppRoutes';
 import { AppContext } from './services/context';
-import { useWordList } from './services/useWordList';
-import { useWords } from './services/useWords';
+import { useWordList } from './hooks/useWordList';
+import { useWords } from './hooks/useWords';
 
 function App() {
   const [wordListId, setWordListId] = useState('');

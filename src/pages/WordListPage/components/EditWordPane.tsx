@@ -1,14 +1,14 @@
 import { Button, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import WordRow from '../../../components/WordRow';
-import { useHandleIndexes, word2Index } from '../../../services/useIndexes';
+import { useHandleIndexes, word2Index } from '../../../hooks/useIndexes';
 import {
   INITIAL_WORD,
   string2Word,
   useHandleWords,
   Word,
   word2String,
-} from '../../../services/useWords';
+} from '../../../hooks/useWords';
 
 const EditWordPane = ({
   word: superWord,

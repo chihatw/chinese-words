@@ -1,7 +1,6 @@
 import { useTheme } from '@mui/system';
 import React from 'react';
-import { pinyin2String } from '../services/pinyins';
-import { Character } from '../services/useWords';
+import { Character, pinyin2String } from '../hooks/useWords';
 
 const CharacterUnit = ({ character }: { character: Character }) => {
   const theme = useTheme();

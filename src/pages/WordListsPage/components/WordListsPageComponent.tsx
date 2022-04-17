@@ -10,7 +10,7 @@ import React from 'react';
 import { NavigateFunction } from 'react-router-dom';
 
 import AppLayout from '../../../layout/AppLayout';
-import { WordList } from '../../../services/useWordList';
+import { WordList } from '../../../hooks/useWordList';
 import WordListRow from './WordListRow';
 
 const WordListsPageComponent = ({
