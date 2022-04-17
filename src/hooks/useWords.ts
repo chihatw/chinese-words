@@ -270,12 +270,13 @@ export const string2Word = ({
   index?: number;
 }) => {
   const lines = value.split('\n');
-  const chinese = lines[0];
+  const noPinyin = (lines[0] || '').replace(/[0-9A-Za-z]/g, '');
+  const forms: string[] = noPinyin.split('');
   const pinyins = lines[1]?.split(' ') || [];
   const sentence = lines[2] || '';
   const japanese = lines[3] || '';
 
-  const characters = buildCharacters({ chinese, pinyins });
+  const characters = buildCharacters({ forms, pinyins });
 
   const newWord: Word = {
     index: word?.index || index || 0,
@@ -290,14 +291,13 @@ export const string2Word = ({
 };
 
 const buildCharacters = ({
-  chinese,
+  forms,
   pinyins,
 }: {
-  chinese: string;
+  forms: string[];
   pinyins: string[];
 }) => {
   const characters: Character[] = [];
-  const forms = chinese.split('');
   forms.forEach((form, index) => {
     const pinyin = string2Pinyin(pinyins[index] || '');
     const character: Character = {
