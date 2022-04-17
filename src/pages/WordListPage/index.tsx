@@ -90,7 +90,7 @@ const WordListPage = () => {
         ...newWord,
         id: result.id,
       };
-      const index = word2Index({ word: _word, wordList });
+      const index = word2Index({ word: _word });
       setIndex(index);
     }
   };
@@ -122,7 +122,7 @@ const WordListPage = () => {
     }));
     const newIndexes: Index[] = [];
     for (const word of _words) {
-      const index = word2Index({ word, wordList });
+      const index = word2Index({ word });
       newIndexes.push(index);
     }
     batchSetIndexes(newIndexes);
@@ -134,6 +134,7 @@ const WordListPage = () => {
         <WordListPageMainComponent
           word={word}
           words={words}
+          wordList={wordList}
           setWord={setWord}
           setWords={setWords}
           navigate={navigate}

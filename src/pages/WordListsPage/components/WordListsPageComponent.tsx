@@ -36,14 +36,6 @@ const WordListsPageComponent = ({
         <Button onClick={handleClickCreate}>新規作成</Button>
       </div>
       <Table size='small'>
-        <TableHead>
-          <TableRow>
-            <TableCell>title</TableCell>
-            <TableCell></TableCell>
-            <TableCell></TableCell>
-            <TableCell></TableCell>
-          </TableRow>
-        </TableHead>
         <TableBody>
           {wordLists.map((wordList, index) => (
             <WordListRow

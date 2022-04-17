@@ -14,7 +14,6 @@ import {
   deleteDocument,
   setDocument,
 } from '../repositories/firebase/utils';
-import { WordList } from './useWordList';
 import { Word } from './useWords';
 
 const COLLECTION = 'indexes';
@@ -23,12 +22,10 @@ export type Index = {
   id: string;
   wordFormIndexes: { [key: string]: boolean };
   wordPinyinIndexes: { [key: string]: boolean };
-  wordListUploadedAt: number;
 };
 
 export const INITIAL_INDEX: Index = {
   id: '',
-  wordListUploadedAt: 0,
   wordFormIndexes: {},
   wordPinyinIndexes: {},
 };
@@ -163,24 +160,20 @@ const buildIndex = (doc: DocumentData) => {
     id: doc.id || '',
     wordFormIndexes: doc.data().wordFormIndexes || {},
     wordPinyinIndexes: doc.data().wordPinyinIndexes || {},
-    wordListUploadedAt: doc.data().wordListUploadedAt || 0,
   };
   return index;
 };
 
 export const word2Index = ({
   word,
-  wordList,
 }: {
   word: Pick<Word, 'characters' | 'id'>;
-  wordList: Pick<WordList, 'uploadedAt'>;
 }) => {
   const { id, characters } = word;
   const index: Index = {
     id,
     wordFormIndexes: {},
     wordPinyinIndexes: {},
-    wordListUploadedAt: wordList.uploadedAt,
   };
   for (const { form, pinyin } of characters) {
     let value = '';

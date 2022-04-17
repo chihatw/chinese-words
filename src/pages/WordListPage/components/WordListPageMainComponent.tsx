@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { NavigateFunction } from 'react-router-dom';
 import WordRow from '../../../components/WordRow';
 import WordRowContainer from '../../../components/WordRowContainer';
+import { WordList } from '../../../hooks/useWordList';
 import {
   INITIAL_WORD,
   string2Word,
@@ -15,6 +16,7 @@ import { AppContext } from '../../../services/context';
 const WordListPageMainComponent = ({
   word,
   words,
+  wordList,
   setWord,
   setWords,
   navigate,
@@ -24,6 +26,7 @@ const WordListPageMainComponent = ({
   navigate: NavigateFunction;
   word: Word;
   words: Word[];
+  wordList: WordList;
   setWord: (value: Word) => void;
   setWords: (value: Word[]) => void;
   handleSubmit: () => void;
@@ -57,10 +60,12 @@ const WordListPageMainComponent = ({
     const newWords = parseWords({ value: batchInput, words });
     setWords(newWords);
   };
-
+  const date = new Date(wordList.uploadedAt);
   return (
     <AppLayout>
-      <h1>WordList</h1>
+      <h1>{`WordList - ${date.getFullYear()}/${
+        date.getMonth() + 1
+      }/${date.getDate()}`}</h1>
       <div>
         <Button onClick={() => navigate('/lists')}>戻る</Button>
         <Button onClick={() => navigate('/search')}>Search</Button>

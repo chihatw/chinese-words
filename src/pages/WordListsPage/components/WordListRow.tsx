@@ -14,10 +14,13 @@ const WordListRow = ({
   handleClickEdit: () => void;
   handleClickDelete: () => void;
 }) => {
-  const { title } = wordList;
+  const { uploadedAt } = wordList;
+  const date = new Date(uploadedAt);
   return (
     <TableRow>
-      <TableCell>{title}</TableCell>
+      <TableCell>{`${date.getFullYear()}/${
+        date.getMonth() + 1
+      }/${date.getDate()}`}</TableCell>
       <TableCell>
         <IconButton onClick={handleClickEdit}>
           <Edit />

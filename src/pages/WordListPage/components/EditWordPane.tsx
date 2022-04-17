@@ -39,7 +39,7 @@ const EditWordPane = ({
   const handleSubmit = async () => {
     const result = await updateWord(word);
     if (!!result) {
-      const index = word2Index(word);
+      const index = word2Index({ word });
       const result = await updateIndex(index);
       if (!!result) {
         callback();
