@@ -1,7 +1,6 @@
 import { TextField, Button } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import WordRow from '../../components/WordRow';
 import AppLayout from '../../layout/AppLayout';
 import { useHandleIndexes } from '../../hooks/useIndexes';
 import {
@@ -11,6 +10,7 @@ import {
   pinyin2String,
   string2Pinyin,
 } from '../../hooks/useWords';
+import WordRowContainer from '../../components/WordRowContainer';
 
 const SearchPage = () => {
   const navigate = useNavigate();
@@ -90,6 +90,10 @@ const SearchPage = () => {
     }
   };
 
+  const backToHome = () => {
+    navigate('/');
+  };
+
   return (
     <AppLayout>
       <div>
@@ -134,7 +138,13 @@ const SearchPage = () => {
         ))}
       </div>
       {words.map((word, index) => (
-        <WordRow key={index} index={index} word={word} />
+        <WordRowContainer
+          key={index}
+          index={index}
+          word={word}
+          deleteCallback={backToHome}
+          updateCallback={backToHome}
+        />
       ))}
     </AppLayout>
   );

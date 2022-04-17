@@ -11,6 +11,9 @@ import {
   batchSetDocuments,
   getDocumentsByQuery,
   batchDeleteDocuments,
+  addDocument,
+  deleteDocument,
+  setDocument,
 } from '../repositories/firebase/utils';
 import { Word } from './useWords';
 
@@ -29,6 +32,17 @@ export const INITIAL_INDEX: Index = {
 };
 
 export const useHandleIndexes = () => {
+  const _setDocument = useMemo(
+    () =>
+      async function <T extends { id: string }>(value: T) {
+        return await setDocument({
+          db,
+          colId: COLLECTION,
+          value,
+        });
+      },
+    []
+  );
   const _updateDocument = useMemo(
     () =>
       async function <T extends { id: string }>(value: T): Promise<T | null> {
@@ -36,6 +50,17 @@ export const useHandleIndexes = () => {
           db,
           colId: COLLECTION,
           value,
+        });
+      },
+    []
+  );
+  const _deleteDocument = useMemo(
+    () =>
+      async function (id: string): Promise<boolean> {
+        return await deleteDocument({
+          id,
+          db,
+          colId: COLLECTION,
         });
       },
     []
@@ -66,10 +91,16 @@ export const useHandleIndexes = () => {
     });
   };
 
+  const setIndex = async (value: Index) => {
+    return await _setDocument(value);
+  };
+
   const updateIndex = async (value: Index) => {
     return await _updateDocument(value);
   };
-
+  const deleteIndex = async (id: string) => {
+    return await _deleteDocument(id);
+  };
   const batchSetIndexes = async (values: Index[]) => {
     return await _batchSetDocuments(values);
   };
@@ -116,7 +147,9 @@ export const useHandleIndexes = () => {
   };
 
   return {
+    setIndex,
     updateIndex,
+    deleteIndex,
     batchSetIndexes,
     batchDeleteIndexes,
     getWordIdsByIndexes,
@@ -144,7 +177,7 @@ export const word2Index = (word: Pick<Word, 'characters' | 'id'>) => {
     const { consonant, vowel, tone } = pinyin;
 
     value = form;
-    !!value && (index.wordPinyinIndexes[value] = true);
+    !!value && (index.wordFormIndexes[value] = true);
 
     value = consonant + vowel + tone;
     !!value && (index.wordPinyinIndexes[value] = true);

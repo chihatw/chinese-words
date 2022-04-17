@@ -12,32 +12,63 @@ import {
   useHandleWords,
   INITIAL_WORD,
 } from '../../hooks/useWords';
-import WordRowContainer from './components/WordRowContainer';
+import WordRowContainer from '../../components/WordRowContainer';
 
 const WordListPage = () => {
   const navigate = useNavigate();
   const { words: superWords, wordList } = useContext(AppContext);
-  const { batchAddWords, batchDeleteWords } = useHandleWords();
-  const { batchDeleteIndexes, batchSetIndexes } = useHandleIndexes();
+  const { addWord, batchAddWords, batchDeleteWords } = useHandleWords();
+  const { setIndex, batchDeleteIndexes, batchSetIndexes } = useHandleIndexes();
 
   const [input, setInput] = useState('');
+  const [batchInput, setBatchInput] = useState('');
   const [words, setWords] = useState<Word[]>([]);
+  const [word, setWord] = useState(INITIAL_WORD);
 
   useEffect(() => {
-    const input = stringifyWords(superWords);
-    setInput(input);
-    const words = parseWords({ value: input, words: superWords });
+    const batchInput = stringifyWords(superWords);
+    setBatchInput(batchInput);
+    const words = parseWords({ value: batchInput, words: superWords });
     setWords(words);
+    const word: Word = { ...INITIAL_WORD, index: superWords.length };
+    setWord(word);
+    const input = word2String(word);
+    setInput(input);
   }, [superWords]);
 
-  const handleChangeInput = (input: string) => {
-    setInput(input);
+  const handleChangeBatchInput = (batchInput: string) => {
+    setBatchInput(batchInput);
 
-    const newWords = parseWords({ value: input, words });
+    const newWords = parseWords({ value: batchInput, words });
     setWords(newWords);
   };
 
+  const handleChangeInput = (input: string) => {
+    setInput(input);
+    const word = string2Word({ value: input, index: words.length });
+    setWord(word);
+  };
+
   const handleSubmit = async () => {
+    const newWord: Omit<Word, 'id'> = {
+      ...word,
+      createdAt: Date.now(),
+      wordListId: wordList.id,
+    };
+    const result = await addWord(newWord);
+    if (!!result) {
+      console.log({ result });
+      const _word: Word = {
+        ...newWord,
+        id: result.id,
+      };
+      const index = word2Index(_word);
+      console.log({ index });
+      setIndex(index);
+    }
+  };
+
+  const handleBatchSubmit = async () => {
     // 既存のwords を削除
     const ids = superWords.map((word) => word.id).filter((i) => i);
     if (ids.length) {
@@ -75,21 +106,27 @@ const WordListPage = () => {
       <h1>WordList</h1>
       <div>
         <Button onClick={() => navigate('/lists')}>戻る</Button>
+        <Button onClick={() => navigate('/search')}>Search</Button>
       </div>
-      <WordRow
-        word={words.slice(-1)[0] || INITIAL_WORD}
-        index={words.length - 1}
-      />
+      <WordRow word={word} index={word.index} />
       <TextField
-        multiline
         value={input}
+        multiline
+        label='add Word'
         onChange={(e) => handleChangeInput(e.target.value)}
-        rows={6}
+        rows={4}
       />
-      <Button onClick={handleSubmit}>submit</Button>
+      <Button onClick={handleSubmit}>add word</Button>
       {words.map((word, index) => (
         <WordRowContainer word={word} key={index} index={index} />
       ))}
+      <TextField
+        multiline
+        value={batchInput}
+        onChange={(e) => handleChangeBatchInput(e.target.value)}
+        rows={6}
+      />
+      <Button onClick={handleBatchSubmit}>submit</Button>
     </AppLayout>
   );
 };

@@ -14,6 +14,8 @@ import {
   batchAddDocuments,
   getDocument,
   getDocumentsByQuery,
+  addDocument,
+  deleteDocument,
 } from '../repositories/firebase/utils';
 import { getConsonant, getVowel } from '../services/pinyins';
 
@@ -139,6 +141,17 @@ export const useHandleWords = () => {
       buildValue,
     });
   };
+  const _addDocument = useMemo(
+    () =>
+      async function <T extends { id: string }>(value: Omit<T, 'id'>) {
+        return await addDocument({
+          db,
+          colId: COLLECTION,
+          value,
+        });
+      },
+    []
+  );
   const _updateDocument = useMemo(
     () =>
       async function <T extends { id: string }>(value: T): Promise<T | null> {
@@ -146,6 +159,17 @@ export const useHandleWords = () => {
           db,
           colId: COLLECTION,
           value,
+        });
+      },
+    []
+  );
+  const _deleteDocument = useMemo(
+    () =>
+      async function (id: string): Promise<boolean> {
+        return await deleteDocument({
+          id,
+          db,
+          colId: COLLECTION,
         });
       },
     []
@@ -171,6 +195,14 @@ export const useHandleWords = () => {
     });
   };
 
+  const addWord = async (word: Omit<Word, 'id'>) => {
+    return await _addDocument(word);
+  };
+
+  const deleteWord = async (id: string) => {
+    return await _deleteDocument(id);
+  };
+
   const getWordsByWordListId = async (wordListId: string) => {
     return await _getDocumentsByQuery({
       queries: [where('wordListId', '==', wordListId)],
@@ -192,7 +224,9 @@ export const useHandleWords = () => {
 
   return {
     getWord,
+    addWord,
     updateWord,
+    deleteWord,
     batchAddWords,
     batchDeleteWords,
     getWordsByWordListId,

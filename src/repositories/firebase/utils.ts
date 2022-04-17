@@ -339,7 +339,7 @@ export const setDocument = async <T extends { id: string }>({
   value: T;
 }): Promise<T | null> => {
   const { id, ...omitted } = value;
-  console.log(`set doc ${colId}.${id}`);
+  console.log(`set doc ${colId}`);
   return await setDoc(doc(db, colId, id), { ...omitted })
     .then(() => {
       return value;
@@ -362,7 +362,7 @@ export const addDocument = async <T extends { id: string }>({
   console.log(`add doc ${colId}`);
   return await addDoc(collection(db, colId), value)
     .then((doc) => {
-      return { id: doc.id, ...value } as T;
+      return { ...value, id: doc.id } as T;
     })
     .catch((e) => {
       console.warn(e);
