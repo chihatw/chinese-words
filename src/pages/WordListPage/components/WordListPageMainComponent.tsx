@@ -50,14 +50,16 @@ const WordListPageMainComponent = ({
   }, []);
 
   useEffect(() => {
-    const batchInput = stringifyWords(superWords);
-    setBatchInput(batchInput);
-    const words = parseWords({ value: batchInput, words: superWords });
-    setWords(words);
-    const word: Word = { ...INITIAL_WORD, index: superWords.length };
-    setWord(word);
-    const input = word2String(word);
-    setInput(input);
+    if (!!superWords.length) {
+      const batchInput = stringifyWords(superWords);
+      setBatchInput(batchInput);
+      const words = parseWords({ value: batchInput, words: superWords });
+      setWords(words);
+      const word: Word = { ...INITIAL_WORD, index: superWords.length };
+      setWord(word);
+      const input = word2String(word);
+      setInput(input);
+    }
   }, [superWords]);
 
   const handleChangeInput = (input: string) => {
