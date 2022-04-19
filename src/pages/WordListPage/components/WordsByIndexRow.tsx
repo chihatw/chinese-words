@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/system';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import CharacterUnit from '../../../components/CharacterUnit';
 import { useHandleIndexes } from '../../../hooks/useIndexes';
 import { useHandleWords, Word } from '../../../hooks/useWords';
@@ -24,7 +24,9 @@ const WordsByIndexRow = ({
   const { getWordIdsByIndexes } = useHandleIndexes();
 
   const [words, setWords] = useState<Word[]>([]);
-  const [wordIds, setWordIds] = useState<string[]>([]);
+
+  const [wordIds, setWordIds] = useState<string[]>([]); // 表示用 非同期（変更反映までに時間がかかる）
+  const wordIdsRef = useRef<string[]>([]); // 内部処理用 同期（変更がすぐに反映）
 
   useEffect(() => {
     if (!!index) {
@@ -35,20 +37,22 @@ const WordsByIndexRow = ({
           indexes: [index],
         });
         setWordIds(wordIds);
+        wordIdsRef.current = wordIds;
       };
       fetchData();
     } else {
       setWordIds([]);
+      wordIdsRef.current = [];
     }
   }, [index]);
 
   useEffect(() => {
-    if (!!wordIds.length && !!index) {
+    if (!!wordIdsRef.current.length) {
       const fetchData = async () => {
         const words = await Promise.all(
           wordIds.map(async (wordId) => await getWord(wordId))
         );
-        if (!!index) {
+        if (!!wordIdsRef.current.length) {
           setWords(words);
         } else {
           setWords([]);
