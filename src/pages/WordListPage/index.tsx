@@ -1,82 +1,22 @@
 import { Grid } from '@mui/material';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { AppContext } from '../../services/context';
 import { Index, word2Index, useHandleIndexes } from '../../hooks/useIndexes';
-import {
-  Word,
-  useHandleWords,
-  INITIAL_WORD,
-  Character,
-  pinyin2String,
-  INITIAL_PINYIN,
-} from '../../hooks/useWords';
+import { Word, useHandleWords, INITIAL_WORD } from '../../hooks/useWords';
 import WordListPageMainComponent from './components/WordListPageMainComponent';
-import WordListPageSideComponent from './components/WordListPageSideComponent';
+import WordListPageSidePane from './components/WordListPageSidePane';
 
 const WordListPage = () => {
   const navigate = useNavigate();
   const { words: superWords, wordList } = useContext(AppContext);
-  const { addWord, batchAddWords, batchDeleteWords, getWord } =
-    useHandleWords();
-  const { setIndex, batchDeleteIndexes, batchSetIndexes, getWordIdsByIndexes } =
-    useHandleIndexes();
+  const { addWord, batchAddWords, batchDeleteWords } = useHandleWords();
+  const { setIndex, batchDeleteIndexes, batchSetIndexes } = useHandleIndexes();
 
   const [word, setWord] = useState(INITIAL_WORD);
   const [words, setWords] = useState<Word[]>([]);
-  const [gotWords, setGotWords] = useState<Word[]>([]);
-  const [indexForm, setIndexForm] = useState('');
-  const [indexPinyin, setIndexPinyin] = useState('');
-
-  useEffect(() => {
-    const lastCharacter: Character | null = word.characters.slice(-1)[0];
-    const form = lastCharacter?.form || '';
-    const pinyin = lastCharacter?.pinyin || INITIAL_PINYIN;
-    const pinyinStr = pinyin2String(pinyin);
-    setIndexForm(form);
-    setIndexPinyin(pinyinStr);
-
-    let wordIds: string[] = [];
-
-    if (!!form) {
-      const fetchData = async () => {
-        const wordIdsByForm = await getWordIdsByIndexes({
-          max: 10,
-          type: 'form',
-          indexes: [form],
-        });
-        wordIds = wordIds.concat(wordIdsByForm);
-
-        if (!!pinyinStr) {
-          const wordIdsByPinyin = await getWordIdsByIndexes({
-            max: 10,
-            type: 'pinyin',
-            indexes: [pinyinStr],
-          });
-          wordIds = wordIds.concat(wordIdsByPinyin);
-        }
-
-        wordIds = wordIds.filter((wordId, index) => {
-          return wordIds.indexOf(wordId) === index;
-        });
-
-        if (wordIds.length) {
-          const words: Word[] = await Promise.all(
-            wordIds.map(async (wordId) => {
-              return await getWord(wordId);
-            })
-          );
-          setGotWords(words);
-        } else {
-          setGotWords([]);
-        }
-      };
-      fetchData();
-    } else {
-      setGotWords([]);
-    }
-  }, [word]);
+  const [startLine, setStartLine] = useState(0);
 
   const handleSubmit = async () => {
     const newWord: Omit<Word, 'id'> = {
@@ -140,14 +80,11 @@ const WordListPage = () => {
           navigate={navigate}
           handleSubmit={handleSubmit}
           handleBatchSubmit={handleBatchSubmit}
+          setStartLine={setStartLine}
         />
       </Grid>
       <Grid item sm={0} md={4}>
-        <WordListPageSideComponent
-          gotWords={gotWords}
-          indexForm={indexForm}
-          indexPinyin={indexPinyin}
-        />
+        <WordListPageSidePane word={word} startLine={startLine} />
       </Grid>
     </Grid>
   );

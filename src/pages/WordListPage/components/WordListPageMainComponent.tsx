@@ -1,5 +1,5 @@
 import { Button, TextField } from '@mui/material';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { NavigateFunction } from 'react-router-dom';
 import WordRow from '../../../components/WordRow';
 import WordRowContainer from '../../../components/WordRowContainer';
@@ -21,21 +21,33 @@ const WordListPageMainComponent = ({
   setWords,
   navigate,
   handleSubmit,
+  setStartLine,
   handleBatchSubmit,
 }: {
-  navigate: NavigateFunction;
   word: Word;
   words: Word[];
   wordList: WordList;
   setWord: (value: Word) => void;
   setWords: (value: Word[]) => void;
+  navigate: NavigateFunction;
   handleSubmit: () => void;
+  setStartLine: (value: number) => void;
   handleBatchSubmit: () => void;
 }) => {
+  const inputRef = useRef<HTMLInputElement>();
+
   const { words: superWords } = useContext(AppContext);
 
   const [input, setInput] = useState('');
   const [batchInput, setBatchInput] = useState('');
+
+  useEffect(() => {
+    const inputElement = inputRef.current;
+    if (!inputElement) return;
+    inputElement.addEventListener('blur', () => {
+      setStartLine(0);
+    });
+  }, []);
 
   useEffect(() => {
     const batchInput = stringifyWords(superWords);
@@ -52,6 +64,11 @@ const WordListPageMainComponent = ({
     setInput(input);
     const word = string2Word({ value: input, index: words.length });
     setWord(word);
+    const inputElem = inputRef.current;
+    if (!!inputElem) {
+      const startLine = getStartLine(inputElem);
+      setStartLine(startLine);
+    }
   };
 
   const handleChangeBatchInput = (batchInput: string) => {
@@ -72,6 +89,7 @@ const WordListPageMainComponent = ({
       </div>
       <WordRow word={word} index={word.index} />
       <TextField
+        inputRef={inputRef}
         value={input}
         multiline
         label='add Word'
@@ -120,4 +138,26 @@ const stringifyWords = (words: Word[]) => {
     lines = lines.concat(_lines);
   }
   return lines.join('\n');
+};
+
+const getStartLine = (inputElement: HTMLInputElement) => {
+  // カーソル位置
+  const start = inputElement.selectionStart || 0;
+  const value = inputElement.value;
+  const lines = value.split('\n');
+
+  let totalIndexes = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const stringLengthWithLF = (lines[i]?.length || 0) + 1;
+    const arrayFrom0 = Object.keys([...Array(stringLengthWithLF)]).map((x) =>
+      Number(x)
+    );
+    const lineIndexes = arrayFrom0.map((x) => x + totalIndexes);
+
+    if (lineIndexes.includes(start)) {
+      return i;
+    }
+    totalIndexes += lineIndexes.length;
+  }
+  return 0;
 };
