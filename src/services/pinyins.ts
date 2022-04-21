@@ -50,6 +50,7 @@ const vowelGroups = [
     'uai',
     'yao',
     'wai',
+    'yai',
   ],
   [
     'yi',
@@ -92,7 +93,17 @@ const vowels_6 = ['ve', 'ie', 'ue', 'ye', 'yue']; // 3+2
 const vowels_7 = ['ua', 'ia', 'ya', 'wa']; // 2+2
 const vowels_8 = ['uan', 'van', 'ian', 'wan', 'yan', 'yuan']; // 3+3
 const vowels_9 = ['uang', 'iang', 'wang', 'yang']; // 2+2
-const vowels_10 = ['iao', 'uai', 'iong', 'er', 'yao', 'wai', 'yong', 'weng']; // 4+4
+const vowels_10 = [
+  'iao',
+  'uai',
+  'iong',
+  'er',
+  'yao',
+  'wai',
+  'yong',
+  'weng',
+  'yai',
+]; // 4+4
 
 export const buildVowelGroups = () => {
   const vowels = [
