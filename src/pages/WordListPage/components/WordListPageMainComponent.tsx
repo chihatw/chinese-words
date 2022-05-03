@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WordRow from '../../../components/WordRow';
 import WordRowContainer from '../../../components/WordRowContainer';
+import { useHandleCharacters } from '../../../hooks/useCharacters';
 import { Index, useHandleIndexes, word2Index } from '../../../hooks/useIndexes';
 
 import {
@@ -36,6 +37,7 @@ const WordListPageMainComponent = ({
   const navigate = useNavigate();
   const { addWord, batchAddWords, batchDeleteWords } = useHandleWords();
   const { setIndex, batchDeleteIndexes, batchSetIndexes } = useHandleIndexes();
+  const { addCharacter } = useHandleCharacters();
   const inputRef = useRef<HTMLInputElement>();
 
   const { words: superWords, wordList } = useContext(AppContext);
@@ -117,6 +119,10 @@ const WordListPageMainComponent = ({
   }, [superWords]);
 
   const handleSubmit = async () => {
+    if (!word.characters.length) return;
+    for (const character of word.characters) {
+      addCharacter(character);
+    }
     const newWord: Omit<Word, 'id'> = {
       ...word,
       createdAt: Date.now(),

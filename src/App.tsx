@@ -4,12 +4,14 @@ import { AppContext } from './services/context';
 import { useWordList } from './hooks/useWordList';
 import { useWords } from './hooks/useWords';
 import { useIndexes } from './hooks/useIndexes';
+import { useCharacters } from './hooks/useCharacters';
 
 function App() {
   const [wordListId, setWordListId] = useState('');
   const { wordList, wordLists } = useWordList({ wordListId, setWordListId });
   const { words, getWord_m } = useWords(wordListId);
   const { getWordIdsByIndexes_m } = useIndexes();
+  const { getCharacter_m } = useCharacters();
   return (
     <AppContext.Provider
       value={{
@@ -19,6 +21,7 @@ function App() {
         getWord_m,
         setWordListId,
         getWordIdsByIndexes_m,
+        getCharacter_m,
       }}
     >
       <AppRoutes />

@@ -55,8 +55,8 @@ const WordsByIndexRow = ({
       >{`${label}: ${index}`}</div>
       {words.map((word, index) => (
         <div key={index} style={{ display: 'flex' }}>
-          {word.characters.map((character, index) => (
-            <CharacterUnit key={index} character={character} />
+          {word.characters.map(({ form, pinyin }, index) => (
+            <CharacterUnit key={index} form={form} pinyin={pinyin} />
           ))}
         </div>
       ))}

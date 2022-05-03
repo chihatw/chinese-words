@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import { Character, INITIAL_CHARACTER } from '../hooks/useCharacters';
 import { INITIAL_WORD_LIST, WordList } from '../hooks/useWordList';
 import { INITIAL_WORD, Word } from '../hooks/useWords';
 
@@ -8,6 +9,7 @@ export const AppContext = createContext<{
   wordLists: WordList[];
   words: Word[];
   getWord_m: (docId: string) => Promise<Word>;
+  getCharacter_m: (form: string) => Promise<Character>;
   getWordIdsByIndexes_m: ({
     max,
     type,
@@ -24,4 +26,5 @@ export const AppContext = createContext<{
   words: [],
   getWordIdsByIndexes_m: async () => [],
   getWord_m: async () => INITIAL_WORD,
+  getCharacter_m: async () => INITIAL_CHARACTER,
 });

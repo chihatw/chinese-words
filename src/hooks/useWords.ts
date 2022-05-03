@@ -32,22 +32,15 @@ export const INITIAL_PINYIN: Pinyin = {
   tone: '',
 };
 
-export type Character = {
-  form: string;
-  pinyin: Pinyin;
-};
-
-export const INITIAL_CHARACTER: Character = {
-  form: '',
-  pinyin: INITIAL_PINYIN,
-};
-
 export type Word = {
   id: string;
   createdAt: number;
   wordListId: string;
   index: number;
-  characters: Character[];
+  characters: {
+    form: string;
+    pinyin: Pinyin;
+  }[];
   sentence: string;
   japanese: string;
 };
@@ -308,10 +301,10 @@ const buildCharacters = ({
   forms: string[];
   pinyins: string[];
 }) => {
-  const characters: Character[] = [];
+  const characters: { form: string; pinyin: Pinyin }[] = [];
   forms.forEach((form, index) => {
     const pinyin = string2Pinyin(pinyins[index] || '');
-    const character: Character = {
+    const character = {
       form,
       pinyin,
     };

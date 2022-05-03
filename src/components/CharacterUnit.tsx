@@ -1,10 +1,9 @@
 import { useTheme } from '@mui/system';
 import React from 'react';
-import { Character, pinyin2String } from '../hooks/useWords';
+import { Pinyin, pinyin2String } from '../hooks/useWords';
 
-const CharacterUnit = ({ character }: { character: Character }) => {
+const CharacterUnit = ({ form, pinyin }: { form: string; pinyin: Pinyin }) => {
   const theme = useTheme();
-  const { form, pinyin } = character;
   let mark = '　';
   const tone = pinyin.tone;
   switch (tone) {

@@ -55,10 +55,8 @@ export const useIndexes = () => {
     type: 'form' | 'pinyin';
     indexes: string[];
   }): Promise<string[]> => {
-    if (!wordIdsByIndexesMemoRef) return [];
     const queries = [];
-
-    const memoKey: string = type + _indexes.join(',');
+    const memoKey = type + _indexes.join(',');
     const memorized = wordIdsByIndexesMemoRef.current[memoKey];
     if (!!memorized) return memorized;
     // メモ化されていない場合

@@ -31,8 +31,8 @@ const WordRow = ({
       </div>
       <div style={{ display: 'grid', rowGap: 4 }}>
         <div style={{ display: 'flex' }}>
-          {characters.map((character, index) => (
-            <CharacterUnit key={index} character={character} />
+          {characters.map(({ form, pinyin }, index) => (
+            <CharacterUnit key={index} form={form} pinyin={pinyin} />
           ))}
         </div>
         {!isPractice && (
