@@ -66,6 +66,7 @@ export const INITIAL_WORD: Word = {
 
 export const useWords = (wordListId: string) => {
   const [words, setWords] = useState<Word[]>([]);
+  const wordMemoRef = useRef<{ [key: string]: Word }>({});
 
   const _snapshotCollection = useMemo(
     () =>
@@ -89,24 +90,6 @@ export const useWords = (wordListId: string) => {
     []
   );
 
-  useEffect(() => {
-    if (!wordListId) {
-      setWords([]);
-      return;
-    }
-    const unsub = _snapshotCollection({
-      queries: [where('wordListId', '==', wordListId), orderBy('index')],
-      setValues: setWords,
-      buildValue: buildWord,
-    });
-    return () => {
-      unsub();
-    };
-  }, [wordListId]);
-  return { words };
-};
-export const useHandleWords = () => {
-  const wordMemoRef = useRef<{ [key: string]: Word }>({});
   const _getDocument = useMemo(
     () =>
       async function <T>({
@@ -128,6 +111,42 @@ export const useHandleWords = () => {
       },
     []
   );
+
+  useEffect(() => {
+    if (!wordListId) {
+      setWords([]);
+      return;
+    }
+    const unsub = _snapshotCollection({
+      queries: [where('wordListId', '==', wordListId), orderBy('index')],
+      setValues: setWords,
+      buildValue: buildWord,
+    });
+    return () => {
+      unsub();
+    };
+  }, [wordListId]);
+
+  const getWord_m = async (docId: string) => {
+    const memoKey = docId;
+    const memorized = wordMemoRef.current[memoKey];
+    if (!!memorized) return memorized;
+
+    const word = await _getDocument({
+      docId,
+      initialValue: INITIAL_WORD,
+      buildValue: buildWord,
+    });
+    wordMemoRef.current = {
+      ...wordMemoRef.current,
+      [memoKey]: word,
+    };
+    return word;
+  };
+
+  return { words, getWord_m };
+};
+export const useHandleWords = () => {
   const _getDocumentsByQuery = async <T>({
     queries,
     buildValue,
@@ -188,23 +207,6 @@ export const useHandleWords = () => {
     return await batchDeleteDocuments({ db, colId: COLLECTION, ids });
   }, []);
 
-  const getWord = async (docId: string) => {
-    const memoKey = docId;
-    const memorized = wordMemoRef.current[memoKey];
-    if (!!memorized) return memorized;
-
-    const word = await _getDocument({
-      docId,
-      initialValue: INITIAL_WORD,
-      buildValue: buildWord,
-    });
-    wordMemoRef.current = {
-      ...wordMemoRef.current,
-      [memoKey]: word,
-    };
-    return word;
-  };
-
   const addWord = async (word: Omit<Word, 'id'>) => {
     return await _addDocument(word);
   };
@@ -233,7 +235,6 @@ export const useHandleWords = () => {
   };
 
   return {
-    getWord,
     addWord,
     updateWord,
     deleteWord,

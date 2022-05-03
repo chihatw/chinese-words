@@ -1,8 +1,8 @@
 import { useTheme } from '@mui/system';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import CharacterUnit from '../../../components/CharacterUnit';
-import { useHandleIndexes } from '../../../hooks/useIndexes';
-import { useHandleWords, Word } from '../../../hooks/useWords';
+import { Word } from '../../../hooks/useWords';
+import { AppContext } from '../../../services/context';
 
 const WordsByIndexRow = ({
   type,
@@ -20,8 +20,7 @@ const WordsByIndexRow = ({
   setGotWordsByPinyin?: (value: Word[]) => void;
 }) => {
   const theme = useTheme();
-  const { getWord } = useHandleWords();
-  const { getWordIdsByIndexes } = useHandleIndexes();
+  const { getWordIdsByIndexes_m, getWord_m } = useContext(AppContext);
 
   const [words, setWords] = useState<Word[]>([]);
 
@@ -31,7 +30,7 @@ const WordsByIndexRow = ({
   useEffect(() => {
     if (!!index) {
       const fetchData = async () => {
-        const wordIds = await getWordIdsByIndexes({
+        const wordIds = await getWordIdsByIndexes_m({
           max: 10,
           type,
           indexes: [index],
@@ -50,7 +49,7 @@ const WordsByIndexRow = ({
     if (!!wordIdsRef.current.length) {
       const fetchData = async () => {
         const words = await Promise.all(
-          wordIds.map(async (wordId) => await getWord(wordId))
+          wordIds.map(async (wordId) => await getWord_m(wordId))
         );
         if (!!wordIdsRef.current.length) {
           setWords(words);

@@ -30,9 +30,72 @@ export const INITIAL_INDEX: Index = {
   wordPinyinIndexes: {},
 };
 
-export const useHandleIndexes = () => {
+export const useIndexes = () => {
   const wordIdsByIndexesMemoRef = useRef<{ [key: string]: string[] }>({});
+  const _getDocumentsByQuery = async <T>({
+    queries,
+    buildValue,
+  }: {
+    queries?: QueryConstraint[];
+    buildValue: (value: DocumentData) => T;
+  }): Promise<T[]> => {
+    return await getDocumentsByQuery({
+      db,
+      colId: COLLECTION,
+      queries,
+      buildValue,
+    });
+  };
+  const getWordIdsByIndexes_m = async ({
+    max,
+    type,
+    indexes: _indexes,
+  }: {
+    max?: number;
+    type: 'form' | 'pinyin';
+    indexes: string[];
+  }): Promise<string[]> => {
+    if (!wordIdsByIndexesMemoRef) return [];
+    const queries = [];
 
+    const memoKey: string = type + _indexes.join(',');
+    const memorized = wordIdsByIndexesMemoRef.current[memoKey];
+    if (!!memorized) return memorized;
+    // メモ化されていない場合
+    switch (type) {
+      case 'form':
+        for (const index of _indexes) {
+          queries.push(where(`wordFormIndexes.${index}`, '==', true));
+        }
+        break;
+      case 'pinyin':
+        for (const index of _indexes) {
+          queries.push(where(`wordPinyinIndexes.${index}`, '==', true));
+        }
+        break;
+      default:
+    }
+
+    if (!!max) {
+      queries.push(limit(max));
+    }
+
+    const indexes = await _getDocumentsByQuery({
+      queries,
+      buildValue: buildIndex,
+    });
+    const wordIds = indexes.map((index) => index.id);
+
+    wordIdsByIndexesMemoRef.current = {
+      ...wordIdsByIndexesMemoRef.current,
+      [memoKey]: wordIds,
+    };
+    return wordIds;
+  };
+  return { getWordIdsByIndexes_m };
+};
+
+export const useHandleIndexes = () => {
   const _setDocument = useMemo(
     () =>
       async function <T extends { id: string }>(value: T) {
@@ -77,21 +140,6 @@ export const useHandleIndexes = () => {
     return await batchDeleteDocuments({ db, colId: COLLECTION, ids });
   }, []);
 
-  const _getDocumentsByQuery = async <T>({
-    queries,
-    buildValue,
-  }: {
-    queries?: QueryConstraint[];
-    buildValue: (value: DocumentData) => T;
-  }): Promise<T[]> => {
-    return await getDocumentsByQuery({
-      db,
-      colId: COLLECTION,
-      queries,
-      buildValue,
-    });
-  };
-
   const setIndex = async (value: Index) => {
     return await _setDocument(value);
   };
@@ -110,60 +158,12 @@ export const useHandleIndexes = () => {
     return await _batchDeleteDocuments(ids);
   };
 
-  const getWordIdsByIndexes = async ({
-    max,
-    type,
-    indexes: _indexes,
-  }: {
-    max?: number;
-    type: 'form' | 'pinyin';
-    indexes: string[];
-  }): Promise<string[]> => {
-    const queries = [];
-
-    const memoKey: string = type + _indexes.join(',');
-
-    const memorized = wordIdsByIndexesMemoRef.current[memoKey];
-    if (!!memorized) return memorized;
-
-    // メモ化されていない場合
-    switch (type) {
-      case 'form':
-        for (const index of _indexes) {
-          queries.push(where(`wordFormIndexes.${index}`, '==', true));
-        }
-        break;
-      case 'pinyin':
-        for (const index of _indexes) {
-          queries.push(where(`wordPinyinIndexes.${index}`, '==', true));
-        }
-        break;
-      default:
-    }
-
-    if (!!max) {
-      queries.push(limit(max));
-    }
-
-    const indexes = await _getDocumentsByQuery({
-      queries,
-      buildValue: buildIndex,
-    });
-    const wordIds = indexes.map((index) => index.id);
-    wordIdsByIndexesMemoRef.current = {
-      ...wordIdsByIndexesMemoRef.current,
-      [memoKey]: wordIds,
-    };
-    return wordIds;
-  };
-
   return {
     setIndex,
     updateIndex,
     deleteIndex,
     batchSetIndexes,
     batchDeleteIndexes,
-    getWordIdsByIndexes,
   };
 };
 

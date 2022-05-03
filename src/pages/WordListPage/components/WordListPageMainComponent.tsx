@@ -1,12 +1,14 @@
 import { Button, TextField } from '@mui/material';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { NavigateFunction } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import WordRow from '../../../components/WordRow';
 import WordRowContainer from '../../../components/WordRowContainer';
-import { WordList } from '../../../hooks/useWordList';
+import { Index, useHandleIndexes, word2Index } from '../../../hooks/useIndexes';
+
 import {
   INITIAL_WORD,
   string2Word,
+  useHandleWords,
   Word,
   word2String,
 } from '../../../hooks/useWords';
@@ -16,37 +18,58 @@ import { AppContext } from '../../../services/context';
 const WordListPageMainComponent = ({
   word,
   words,
-  wordList,
   setWord,
   setWords,
-  navigate,
-  handleSubmit,
   setStartLine,
-  handleBatchSubmit,
+  setIndexForm,
 }: {
   word: Word;
   words: Word[];
-  wordList: WordList;
   setWord: (value: Word) => void;
   setWords: (value: Word[]) => void;
-  navigate: NavigateFunction;
-  handleSubmit: () => void;
   setStartLine: (value: number) => void;
-  handleBatchSubmit: () => void;
+  setIndexForm: (value: string) => void;
 }) => {
+  const navigate = useNavigate();
+  const { addWord, batchAddWords, batchDeleteWords } = useHandleWords();
+  const { setIndex, batchDeleteIndexes, batchSetIndexes } = useHandleIndexes();
   const inputRef = useRef<HTMLInputElement>();
 
-  const { words: superWords } = useContext(AppContext);
+  const { words: superWords, wordList } = useContext(AppContext);
 
   const [input, setInput] = useState('');
   const [batchInput, setBatchInput] = useState('');
 
+  const getStartLineByKeyup = () => {
+    const inputElement = inputRef.current;
+    if (!inputElement) return;
+    const start = inputElement.selectionStart || 0;
+    const value = inputElement.value;
+    const startLine = getStartLine(inputElement);
+    switch (startLine) {
+      case 0:
+      case 2:
+        // カーソルの直前の一文字を取得 indexForm
+        let indexForm = value.split('')[start - 1] || '';
+        // ピンインの削除
+        indexForm = indexForm.replace(/[0-9A-Za-z]/, '');
+        // 改行文字の削除
+        indexForm = indexForm.replace(/(\n)/, '');
+        setIndexForm(indexForm);
+        break;
+      case 1:
+        // カーソルが該当するピンインを取得
+        setIndexForm('');
+        break;
+      default:
+        setIndexForm('');
+    }
+  };
+
   useEffect(() => {
     const inputElement = inputRef.current;
     if (!inputElement) return;
-    inputElement.addEventListener('blur', () => {
-      setStartLine(0);
-    });
+    inputElement.addEventListener('keyup', getStartLineByKeyup);
   }, []);
 
   useEffect(() => {
@@ -62,9 +85,60 @@ const WordListPageMainComponent = ({
     }
   }, [superWords]);
 
+  const handleSubmit = async () => {
+    const newWord: Omit<Word, 'id'> = {
+      ...word,
+      createdAt: Date.now(),
+      wordListId: wordList.id,
+    };
+    const result = await addWord(newWord);
+    if (!!result) {
+      const _word: Word = {
+        ...newWord,
+        id: result.id,
+      };
+      const index = word2Index({ word: _word });
+      setIndex(index);
+    }
+  };
+
+  const handleBatchSubmit = async () => {
+    // 既存のwords を削除
+    const ids = superWords.map((word) => word.id).filter((i) => i);
+    if (ids.length) {
+      batchDeleteWords(ids);
+      batchDeleteIndexes(ids);
+    }
+    // 新規に追加
+    const newWords: Omit<Word, 'id'>[] = [];
+    const createdAt = Date.now();
+    for (const word of words) {
+      const newWord: Omit<Word, 'id'> = {
+        ...word,
+        createdAt,
+        wordListId: wordList.id,
+      };
+      newWords.push(newWord);
+    }
+    const wordIds = await batchAddWords(newWords);
+    const _words: Word[] = words.map((word, index) => ({
+      ...word,
+      createdAt: 0,
+      wordListId: '',
+      id: wordIds[index],
+    }));
+    const newIndexes: Index[] = [];
+    for (const word of _words) {
+      const index = word2Index({ word });
+      newIndexes.push(index);
+    }
+    batchSetIndexes(newIndexes);
+  };
+
   const handleChangeInput = (input: string) => {
     setInput(input);
     const word = string2Word({ value: input, index: words.length });
+
     setWord(word);
     const inputElem = inputRef.current;
     if (!!inputElem) {

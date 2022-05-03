@@ -1,8 +1,7 @@
 import { TextField, Button } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../../layout/AppLayout';
-import { useHandleIndexes } from '../../hooks/useIndexes';
 import {
   Pinyin,
   useHandleWords,
@@ -11,17 +10,17 @@ import {
   string2Pinyin,
 } from '../../hooks/useWords';
 import WordRowContainer from '../../components/WordRowContainer';
+import { AppContext } from '../../services/context';
 
 const SearchPage = () => {
   const navigate = useNavigate();
+  const { getWordIdsByIndexes_m, getWord_m } = useContext(AppContext);
   const [formsInput, setFormsInput] = useState('');
   const [pinyinsInput, setPinyinsInput] = useState('');
   const [pinyins, setPinyins] = useState<Pinyin[]>([]);
   const [forms, setForms] = useState<string[]>([]);
   const [wordIds, setWordIds] = useState<string[]>([]);
   const [words, setWords] = useState<Word[]>([]);
-  const { getWord } = useHandleWords();
-  const { getWordIdsByIndexes } = useHandleIndexes();
 
   useEffect(() => {
     if (!!wordIds.length) {
@@ -29,7 +28,7 @@ const SearchPage = () => {
         const words: Word[] = [];
         await Promise.all(
           wordIds.map(async (wordId) => {
-            const word = await getWord(wordId);
+            const word = await getWord_m(wordId);
             if (!!word.id) {
               words.push(word);
             }
@@ -55,7 +54,7 @@ const SearchPage = () => {
     setPinyins([]);
     setPinyinsInput('');
     if (!!forms.length) {
-      const wordIds = await getWordIdsByIndexes({
+      const wordIds = await getWordIdsByIndexes_m({
         max: 10,
         type: 'form',
         indexes: forms,
@@ -78,7 +77,7 @@ const SearchPage = () => {
     setPinyins(pinyins);
 
     if (!!pinyins.length) {
-      const wordIds: string[] = await getWordIdsByIndexes({
+      const wordIds: string[] = await getWordIdsByIndexes_m({
         indexes: pinyins.map((pinyin) => pinyin2String(pinyin)),
         max: 10,
         type: 'pinyin',

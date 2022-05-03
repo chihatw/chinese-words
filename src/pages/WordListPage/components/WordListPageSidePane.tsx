@@ -5,23 +5,19 @@ import WordsByIndexRow from './WordsByIndexRow';
 const WordListPageSidePane = ({
   word,
   startLine,
+  indexForm,
 }: {
   word: Word;
   startLine: number;
+  indexForm: string;
 }) => {
-  const [indexForm, setIndexForm] = useState('');
   const [indexPinyin, setIndexPinyin] = useState('');
   const [indexVowelTone, setIndexVowelTone] = useState('');
   // 入力位置からインデックス作成
   useEffect(() => {
-    let indexForm = '';
     let indexPinyin = '';
     let indexVowelTone = '';
     switch (startLine) {
-      case 0:
-        const lastForm = getLastForm(word);
-        !!lastForm && (indexForm = lastForm);
-        break;
       case 1:
         const { consonant, vowel, tone } = getLastPinyin(word);
         const vowelTone = vowel + tone;
@@ -34,7 +30,7 @@ const WordListPageSidePane = ({
         break;
       default:
     }
-    setIndexForm(indexForm);
+
     setIndexPinyin(indexPinyin);
     setIndexVowelTone(indexVowelTone);
   }, [word, startLine]);
@@ -74,13 +70,6 @@ const WordListPageSidePane = ({
 };
 
 export default WordListPageSidePane;
-
-const getLastForm = (word: Word) => {
-  const forms = word.characters
-    .map((character) => character.form)
-    .filter((i) => i);
-  return forms.slice(-1)[0] || '';
-};
 
 const getLastPinyin = (word: Word) => {
   const pinyins = word.characters
