@@ -250,51 +250,7 @@ const buildWord = (doc: DocumentData) => {
   return word;
 };
 
-export const word2String = (word: Word) => {
-  const lines: string[] = [];
-  const { characters, sentence, japanese } = word;
-  const chinese = characters.map((character) => character.form).join('');
-  const pinyins = characters
-    .map((character) => pinyin2String(character.pinyin))
-    .join(' ');
-  lines.push(chinese);
-  lines.push(pinyins);
-  lines.push(sentence);
-  lines.push(japanese);
-  return lines.join('\n');
-};
-
-export const string2Word = ({
-  value,
-  word,
-  index,
-}: {
-  value: string;
-  word?: Word;
-  index?: number;
-}) => {
-  const lines = value.split('\n');
-  const noPinyin = (lines[0] || '').replace(/[0-9A-Za-z]/g, '');
-  const forms: string[] = noPinyin.split('');
-  const pinyins = lines[1]?.split(' ') || [];
-  const sentence = lines[2] || '';
-  const japanese = lines[3] || '';
-
-  const characters = buildCharacters({ forms, pinyins });
-
-  const newWord: Word = {
-    index: word?.index || index || 0,
-    characters,
-    sentence,
-    japanese,
-    id: word?.id || '',
-    createdAt: word?.createdAt || 0,
-    wordListId: word?.wordListId || '',
-  };
-  return newWord;
-};
-
-const buildCharacters = ({
+export const buildCharacters = ({
   forms,
   pinyins,
 }: {

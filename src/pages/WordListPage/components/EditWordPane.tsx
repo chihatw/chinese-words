@@ -3,11 +3,13 @@ import React, { useEffect, useState } from 'react';
 import WordRow from '../../../components/WordRow';
 import { useHandleIndexes, word2Index } from '../../../hooks/useIndexes';
 import {
+  INITIAL_PINYIN,
   INITIAL_WORD,
-  string2Word,
+  Pinyin,
+  pinyin2String,
+  string2Pinyin,
   useHandleWords,
   Word,
-  word2String,
 } from '../../../hooks/useWords';
 
 const EditWordPane = ({
@@ -17,23 +19,66 @@ const EditWordPane = ({
   word: Word;
   callback: () => void;
 }) => {
-  const [input, setInput] = useState('');
+  const [formStr, setFormStr] = useState('');
+  const [pinyinStr, setPinyinStr] = useState('');
+  const [sentence, setSentence] = useState('');
+  const [japanese, setJapanese] = useState('');
   const [word, setWord] = useState(INITIAL_WORD);
+  const [pinyins, setPinyins] = useState<Pinyin[]>([]);
+  const [forms, setForms] = useState<string[]>([]);
 
   const { updateWord } = useHandleWords();
   const { updateIndex } = useHandleIndexes();
 
   useEffect(() => {
-    const input = word2String(superWord);
-    setInput(input);
-    const word = string2Word({ value: input, word: superWord });
-    setWord(word);
+    setWord(superWord);
+    setForms(superWord.characters.map(({ form }) => form));
+    setPinyins(superWord.characters.map(({ pinyin }) => pinyin));
+    setFormStr(
+      superWord.characters.map((character) => character.form).join('')
+    );
+    setPinyinStr(
+      superWord.characters
+        .map((character) => pinyin2String(character.pinyin))
+        .join(' ')
+    );
+    setJapanese(superWord.japanese);
+    setSentence(superWord.sentence);
   }, [superWord]);
 
-  const handleChangeInput = (input: string) => {
-    setInput(input);
-    const newWord = string2Word({ value: input, word });
-    setWord(newWord);
+  useEffect(() => {
+    const characters: { form: string; pinyin: Pinyin }[] = [];
+    forms.forEach((form, index) => {
+      characters.push({ form, pinyin: pinyins[index] || INITIAL_PINYIN });
+    });
+    const word: Word = {
+      ...superWord,
+      characters,
+      sentence,
+      japanese,
+    };
+    setWord(word);
+  }, [forms, pinyins, japanese, sentence, superWord]);
+
+  const handleChangeFormStr = (formStr: string) => {
+    setFormStr(formStr);
+    const noPinyin = formStr.replace(/[0-9A-Za-z]/g, '').replace(/\s/g, '');
+    const forms = noPinyin.split('');
+    setForms(forms);
+  };
+
+  const handleChangePinyinStr = (pinyinStr: string) => {
+    pinyinStr = pinyinStr.replace(/(\s){1,}/g, ' ');
+    setPinyinStr(pinyinStr);
+    const pinyins: Pinyin[] = [];
+    for (const ps of pinyinStr.split(' ')) {
+      const pinyin = string2Pinyin(ps);
+      const { vowel } = pinyin;
+      if (vowel) {
+        pinyins.push(pinyin);
+      }
+    }
+    setPinyins(pinyins);
   };
 
   const handleSubmit = async () => {
@@ -50,12 +95,30 @@ const EditWordPane = ({
   return (
     <div style={{ display: 'grid', rowGap: 8 }}>
       <TextField
-        value={input}
+        label='formStr'
+        value={formStr}
         size='small'
-        fullWidth
-        multiline
-        onChange={(e) => handleChangeInput(e.target.value)}
+        onChange={(e) => handleChangeFormStr(e.target.value)}
       />
+      <TextField
+        label='pinyinStr'
+        value={pinyinStr}
+        size='small'
+        onChange={(e) => handleChangePinyinStr(e.target.value)}
+      />
+      <TextField
+        label='sentence'
+        value={sentence}
+        size='small'
+        onChange={(e) => setSentence(e.target.value)}
+      />
+      <TextField
+        label='japanese'
+        value={japanese}
+        size='small'
+        onChange={(e) => setJapanese(e.target.value)}
+      />
+
       <div style={{ padding: 8, background: '#eee' }}>
         <WordRow word={word} index={word.index} />
       </div>

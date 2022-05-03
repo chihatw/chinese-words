@@ -4,22 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import WordRow from '../../../components/WordRow';
 import WordRowContainer from '../../../components/WordRowContainer';
 import { useHandleCharacters } from '../../../hooks/useCharacters';
-import { Index, useHandleIndexes, word2Index } from '../../../hooks/useIndexes';
+import { useHandleIndexes, word2Index } from '../../../hooks/useIndexes';
 
 import {
-  INITIAL_WORD,
+  INITIAL_PINYIN,
+  Pinyin,
   string2Pinyin,
-  string2Word,
   useHandleWords,
   Word,
-  word2String,
 } from '../../../hooks/useWords';
 import AppLayout from '../../../layout/AppLayout';
 import { AppContext } from '../../../services/context';
 
 const WordListPageMainComponent = ({
   word,
-  words,
+  words, // これ何？
   setWord,
   setWords,
   setIndexForm,
@@ -35,88 +34,129 @@ const WordListPageMainComponent = ({
   setIndexVowelTone: (value: string) => void;
 }) => {
   const navigate = useNavigate();
-  const { addWord, batchAddWords, batchDeleteWords } = useHandleWords();
-  const { setIndex, batchDeleteIndexes, batchSetIndexes } = useHandleIndexes();
+  const { addWord } = useHandleWords();
+  const { setIndex } = useHandleIndexes();
   const { addCharacter } = useHandleCharacters();
-  const inputRef = useRef<HTMLInputElement>();
+  const formStrInputRef = useRef<HTMLInputElement>();
+  const pinyinStrInputRef = useRef<HTMLInputElement>();
 
-  const { words: superWords, wordList } = useContext(AppContext);
+  const { words: superWords, wordList } = useContext(AppContext); // superWords って何？
+  const [formStr, setFormStr] = useState('');
+  const [pinyinStr, setPinyinStr] = useState('');
+  const [sentence, setSentence] = useState('');
+  const [japanese, setJapanese] = useState('');
+  const [pinyins, setPinyins] = useState<Pinyin[]>([]);
+  const [forms, setForms] = useState<string[]>([]);
 
-  const [input, setInput] = useState('');
-  const [batchInput, setBatchInput] = useState('');
-
-  const getStartLineByKeyup = () => {
-    const inputElement = inputRef.current;
+  const getIndexForm = () => {
+    const inputElement = formStrInputRef.current;
     if (!inputElement) return;
     const start = inputElement.selectionStart || 0;
     const value = inputElement.value;
-    const startLine = getStartLine(inputElement);
-    switch (startLine) {
-      case 0:
-      case 2:
-        // カーソルの直前の一文字を取得 indexForm
-        let indexForm = value.split('')[start - 1] || '';
-        // ピンインの削除
-        indexForm = indexForm.replace(/[0-9A-Za-z]/, '');
-        // 改行文字の削除
-        indexForm = indexForm.replace(/(\n)/, '');
-        setIndexForm(indexForm);
-        setIndexPinyin('');
-        setIndexVowelTone('');
-        break;
-      case 1:
-        // カーソルが該当するピンインを取得
-        const startAt = value[start - 1] || '';
+    // カーソルの直前の一文字を取得 indexForm
+    let indexForm = value.split('')[start - 1] || '';
+    // ピンインの削除
+    indexForm = indexForm.replace(/[0-9A-Za-z]/, '');
+    // 改行文字の削除
+    indexForm = indexForm.replace(/(\n)/, '');
+    setIndexForm(indexForm);
+    setIndexPinyin('');
+    setIndexVowelTone('');
+  };
 
-        if (!['\n', ' '].includes(startAt)) {
-          // 後ろにピンインが続くかどうかの確認
-          const postPinyinChars: string[] = [];
-          let i = start;
-          while (!['\n', ' '].includes(value[i])) {
-            postPinyinChars.push(value[i]);
-            i++;
-          }
-          // 前にピンインが続くかどうかの確認
-          const prePinyinChars: string[] = [];
-          i = start - 1;
-          while (!['\n', ' '].includes(value[i])) {
-            prePinyinChars.unshift(value[i]);
-            i--;
-          }
-          const pinyinString = prePinyinChars.concat(postPinyinChars).join('');
-          const { consonant, vowel, tone } = string2Pinyin(pinyinString);
-          setIndexPinyin(consonant + vowel + tone);
-          setIndexVowelTone(vowel + tone);
-        } else {
-          setIndexPinyin('');
-          setIndexVowelTone('');
-        }
+  const getIndexPinyin = () => {
+    const inputElement = pinyinStrInputRef.current;
+    if (!inputElement) return;
+    const start = inputElement.selectionStart || 0;
+    const value = inputElement.value;
 
-        setIndexForm('');
-        break;
-      default:
-        setIndexForm('');
+    // カーソルが該当するピンインを取得
+    const startAt = value[start - 1] || '';
+
+    if (!['\n', ' '].includes(startAt)) {
+      // 後ろにピンインが続くかどうかの確認
+      const postPinyinChars: string[] = [];
+      let i = start;
+      while (value[i] && value[i] !== ' ') {
+        postPinyinChars.push(value[i]);
+        i++;
+      }
+      // 前にピンインが続くかどうかの確認
+      const prePinyinChars: string[] = [];
+      i = start - 1;
+      while (value[i] && value[i] !== ' ') {
+        prePinyinChars.unshift(value[i]);
+        i--;
+      }
+      const pinyinString = prePinyinChars.concat(postPinyinChars).join('');
+      const { consonant, vowel, tone } = string2Pinyin(pinyinString);
+      setIndexPinyin(consonant + vowel + tone);
+      setIndexVowelTone(vowel + tone);
+    } else {
+      setIndexPinyin('');
+      setIndexVowelTone('');
     }
+
+    setIndexForm('');
   };
 
   useEffect(() => {
-    const inputElement = inputRef.current;
+    const inputElement = formStrInputRef.current;
     if (!inputElement) return;
-    inputElement.addEventListener('keyup', getStartLineByKeyup);
+    inputElement.addEventListener('keyup', getIndexForm);
+  }, []);
+
+  useEffect(() => {
+    const inputElement = pinyinStrInputRef.current;
+    if (!inputElement) return;
+    inputElement.addEventListener('keyup', getIndexPinyin);
   }, []);
 
   useEffect(() => {
     if (!!superWords.length) {
-      const batchInput = stringifyWords(superWords);
-      setBatchInput(batchInput);
-      const words = parseWords({ value: batchInput, words: superWords });
-      setWords(words);
-      const word: Word = { ...INITIAL_WORD, index: superWords.length };
-      setWord(word);
-      const input = word2String(word);
-      setInput(input);
+      setWords(superWords);
+    } else {
+      setWords([]);
     }
   }, [superWords]);
+
+  useEffect(() => {
+    const characters: { form: string; pinyin: Pinyin }[] = [];
+    forms.forEach((form, index) => {
+      characters.push({ form, pinyin: pinyins[index] || INITIAL_PINYIN });
+    });
+    const word: Word = {
+      id: '',
+      characters,
+      createdAt: 0,
+      wordListId: '',
+      sentence,
+      japanese,
+      index: words.length,
+    };
+    setWord(word);
+  }, [forms, pinyins, japanese, sentence]);
+
+  const handleChangeFormStr = (formStr: string) => {
+    setFormStr(formStr);
+    const noPinyin = formStr.replace(/[0-9A-Za-z]/g, '').replace(/\s/g, '');
+    const forms = noPinyin.split('');
+    setForms(forms);
+  };
+
+  const handleChangePinyinStr = (pinyinStr: string) => {
+    pinyinStr = pinyinStr.replace(/(\s){1,}/g, ' ');
+    setPinyinStr(pinyinStr);
+    const pinyins: Pinyin[] = [];
+    for (const ps of pinyinStr.split(' ')) {
+      const pinyin = string2Pinyin(ps);
+      const { vowel } = pinyin;
+      if (vowel) {
+        pinyins.push(pinyin);
+      }
+    }
+    setPinyins(pinyins);
+  };
 
   const handleSubmit = async () => {
     if (!word.characters.length) return;
@@ -139,51 +179,6 @@ const WordListPageMainComponent = ({
     }
   };
 
-  const handleBatchSubmit = async () => {
-    // 既存のwords を削除
-    const ids = superWords.map((word) => word.id).filter((i) => i);
-    if (ids.length) {
-      batchDeleteWords(ids);
-      batchDeleteIndexes(ids);
-    }
-    // 新規に追加
-    const newWords: Omit<Word, 'id'>[] = [];
-    const createdAt = Date.now();
-    for (const word of words) {
-      const newWord: Omit<Word, 'id'> = {
-        ...word,
-        createdAt,
-        wordListId: wordList.id,
-      };
-      newWords.push(newWord);
-    }
-    const wordIds = await batchAddWords(newWords);
-    const _words: Word[] = words.map((word, index) => ({
-      ...word,
-      createdAt: 0,
-      wordListId: '',
-      id: wordIds[index],
-    }));
-    const newIndexes: Index[] = [];
-    for (const word of _words) {
-      const index = word2Index({ word });
-      newIndexes.push(index);
-    }
-    batchSetIndexes(newIndexes);
-  };
-
-  const handleChangeInput = (input: string) => {
-    setInput(input);
-    const word = string2Word({ value: input, index: words.length });
-    setWord(word);
-  };
-
-  const handleChangeBatchInput = (batchInput: string) => {
-    setBatchInput(batchInput);
-
-    const newWords = parseWords({ value: batchInput, words });
-    setWords(newWords);
-  };
   const date = new Date(wordList.uploadedAt);
   return (
     <AppLayout>
@@ -196,56 +191,40 @@ const WordListPageMainComponent = ({
       </div>
       <WordRow word={word} index={word.index} />
       <TextField
-        inputRef={inputRef}
-        value={input}
-        multiline
-        label='add Word'
-        onChange={(e) => handleChangeInput(e.target.value)}
-        rows={4}
+        inputRef={formStrInputRef}
+        label='formStr'
+        size='small'
+        value={formStr}
+        onChange={(e) => handleChangeFormStr(e.target.value)}
+      />
+      <TextField
+        inputRef={pinyinStrInputRef}
+        label='pinyinStr'
+        size='small'
+        value={pinyinStr}
+        onChange={(e) => handleChangePinyinStr(e.target.value)}
+      />
+      <TextField
+        label='sentence'
+        size='small'
+        value={sentence}
+        onChange={(e) => setSentence(e.target.value)}
+      />
+      <TextField
+        label='japanese'
+        size='small'
+        value={japanese}
+        onChange={(e) => setJapanese(e.target.value)}
       />
       <Button onClick={handleSubmit}>add word</Button>
       {words.map((word, index) => (
         <WordRowContainer word={word} key={index} index={index} />
       ))}
-      <TextField
-        multiline
-        value={batchInput}
-        onChange={(e) => handleChangeBatchInput(e.target.value)}
-        rows={6}
-      />
-      <Button onClick={handleBatchSubmit}>submit</Button>
     </AppLayout>
   );
 };
 
 export default WordListPageMainComponent;
-
-const parseWords = ({ value, words }: { value: string; words: Word[] }) => {
-  const newWords: Word[] = [];
-  const lines = value.split('\n');
-  let index = 0;
-  for (let i = 0; i < lines.length; i += 4) {
-    const value = [
-      lines[i] || '',
-      lines[i + 1] || '',
-      lines[i + 2] || '',
-      lines[i + 3] || '',
-    ].join('\n');
-    const newWord = string2Word({ value, word: words[index], index });
-    newWords.push(newWord);
-    index++;
-  }
-  return newWords;
-};
-
-const stringifyWords = (words: Word[]) => {
-  let lines: string[] = [];
-  for (const word of words) {
-    const _lines = word2String(word);
-    lines = lines.concat(_lines);
-  }
-  return lines.join('\n');
-};
 
 const getStartLine = (inputElement: HTMLInputElement) => {
   // カーソル位置
