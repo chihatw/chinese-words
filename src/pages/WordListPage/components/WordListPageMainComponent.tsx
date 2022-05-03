@@ -8,7 +8,9 @@ import { useHandleIndexes, word2Index } from '../../../hooks/useIndexes';
 
 import {
   INITIAL_PINYIN,
+  INITIAL_WORD,
   Pinyin,
+  pinyin2String,
   string2Pinyin,
   useHandleWords,
   Word,
@@ -17,30 +19,24 @@ import AppLayout from '../../../layout/AppLayout';
 import { AppContext } from '../../../services/context';
 
 const WordListPageMainComponent = ({
-  word,
-  words, // これ何？
-  setWord,
-  setWords,
   setIndexForm,
   setIndexPinyin,
   setIndexVowelTone,
 }: {
-  word: Word;
-  words: Word[];
-  setWord: (value: Word) => void;
-  setWords: (value: Word[]) => void;
   setIndexForm: (value: string) => void;
   setIndexPinyin: (value: string) => void;
   setIndexVowelTone: (value: string) => void;
 }) => {
   const navigate = useNavigate();
+  const { getPinyinFromForm_m } = useContext(AppContext);
   const { addWord } = useHandleWords();
   const { setIndex } = useHandleIndexes();
   const { addCharacter } = useHandleCharacters();
   const formStrInputRef = useRef<HTMLInputElement>();
   const pinyinStrInputRef = useRef<HTMLInputElement>();
 
-  const { words: superWords, wordList } = useContext(AppContext); // superWords って何？
+  const { words, wordList } = useContext(AppContext); // superWords って何？
+  const [word, setWord] = useState(INITIAL_WORD);
   const [formStr, setFormStr] = useState('');
   const [pinyinStr, setPinyinStr] = useState('');
   const [sentence, setSentence] = useState('');
@@ -48,7 +44,7 @@ const WordListPageMainComponent = ({
   const [pinyins, setPinyins] = useState<Pinyin[]>([]);
   const [forms, setForms] = useState<string[]>([]);
 
-  const getIndexForm = () => {
+  const formStrKeyupCallback = () => {
     const inputElement = formStrInputRef.current;
     if (!inputElement) return;
     const start = inputElement.selectionStart || 0;
@@ -64,7 +60,7 @@ const WordListPageMainComponent = ({
     setIndexVowelTone('');
   };
 
-  const getIndexPinyin = () => {
+  const pinyinStrKeyupCallback = () => {
     const inputElement = pinyinStrInputRef.current;
     if (!inputElement) return;
     const start = inputElement.selectionStart || 0;
@@ -103,33 +99,23 @@ const WordListPageMainComponent = ({
   useEffect(() => {
     const inputElement = formStrInputRef.current;
     if (!inputElement) return;
-    inputElement.addEventListener('keyup', getIndexForm);
+    inputElement.addEventListener('keyup', formStrKeyupCallback);
   }, []);
 
   useEffect(() => {
     const inputElement = pinyinStrInputRef.current;
     if (!inputElement) return;
-    inputElement.addEventListener('keyup', getIndexPinyin);
+    inputElement.addEventListener('keyup', pinyinStrKeyupCallback);
   }, []);
 
   useEffect(() => {
-    if (!!superWords.length) {
-      setWords(superWords);
-    } else {
-      setWords([]);
-    }
-  }, [superWords]);
-
-  useEffect(() => {
-    const characters: { form: string; pinyin: Pinyin }[] = [];
-    forms.forEach((form, index) => {
-      characters.push({ form, pinyin: pinyins[index] || INITIAL_PINYIN });
-    });
+    const characters = forms.map((form, index) => ({
+      form,
+      pinyin: pinyins[index] || INITIAL_PINYIN,
+    }));
     const word: Word = {
-      id: '',
+      ...INITIAL_WORD,
       characters,
-      createdAt: 0,
-      wordListId: '',
       sentence,
       japanese,
       index: words.length,
@@ -137,16 +123,25 @@ const WordListPageMainComponent = ({
     setWord(word);
   }, [forms, pinyins, japanese, sentence]);
 
-  const handleChangeFormStr = (formStr: string) => {
+  const handleChangeFormStr = async (formStr: string) => {
     setFormStr(formStr);
     const noPinyin = formStr.replace(/[0-9A-Za-z]/g, '').replace(/\s/g, '');
     const forms = noPinyin.split('');
     setForms(forms);
+    const pinyins: Pinyin[] = [];
+    for (const form of forms) {
+      const pinyin = await getPinyinFromForm_m(form);
+      pinyins.push(pinyin);
+    }
+    setPinyinStr(pinyins.map((pinyin) => pinyin2String(pinyin)).join(' '));
+    setPinyins(pinyins);
   };
 
   const handleChangePinyinStr = (pinyinStr: string) => {
+    // 連続する半角スペースは1つにまとめる
     pinyinStr = pinyinStr.replace(/(\s){1,}/g, ' ');
     setPinyinStr(pinyinStr);
+
     const pinyins: Pinyin[] = [];
     for (const ps of pinyinStr.split(' ')) {
       const pinyin = string2Pinyin(ps);
@@ -161,20 +156,21 @@ const WordListPageMainComponent = ({
   const handleSubmit = async () => {
     if (!word.characters.length) return;
     for (const character of word.characters) {
+      // add + update
       addCharacter(character);
     }
-    const newWord: Omit<Word, 'id'> = {
+    const { id, ...newWord }: Word = {
       ...word,
       createdAt: Date.now(),
       wordListId: wordList.id,
     };
     const result = await addWord(newWord);
     if (!!result) {
-      const _word: Word = {
+      const word: Word = {
         ...newWord,
         id: result.id,
       };
-      const index = word2Index({ word: _word });
+      const index = word2Index({ word });
       setIndex(index);
     }
   };
@@ -225,25 +221,3 @@ const WordListPageMainComponent = ({
 };
 
 export default WordListPageMainComponent;
-
-const getStartLine = (inputElement: HTMLInputElement) => {
-  // カーソル位置
-  const start = inputElement.selectionStart || 0;
-  const value = inputElement.value;
-  const lines = value.split('\n');
-
-  let totalIndexes = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const stringLengthWithLF = (lines[i]?.length || 0) + 1;
-    const arrayFrom0 = Object.keys([...Array(stringLengthWithLF)]).map((x) =>
-      Number(x)
-    );
-    const lineIndexes = arrayFrom0.map((x) => x + totalIndexes);
-
-    if (lineIndexes.includes(start)) {
-      return i;
-    }
-    totalIndexes += lineIndexes.length;
-  }
-  return 0;
-};

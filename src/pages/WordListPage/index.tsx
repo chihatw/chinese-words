@@ -6,8 +6,6 @@ import WordListPageMainComponent from './components/WordListPageMainComponent';
 import WordListPageSidePane from './components/WordListPageSidePane';
 
 const WordListPage = () => {
-  const [word, setWord] = useState(INITIAL_WORD);
-  const [words, setWords] = useState<Word[]>([]);
   const [indexForm, setIndexForm] = useState('');
   const [indexPinyin, setIndexPinyin] = useState('');
   const [indexVowelTone, setIndexVowelTone] = useState('');
@@ -16,10 +14,6 @@ const WordListPage = () => {
     <Grid container>
       <Grid item sm={12} md={8}>
         <WordListPageMainComponent
-          word={word}
-          words={words}
-          setWord={setWord}
-          setWords={setWords}
           setIndexForm={setIndexForm}
           setIndexPinyin={setIndexPinyin}
           setIndexVowelTone={setIndexVowelTone}

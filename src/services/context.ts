@@ -1,7 +1,7 @@
 import { createContext } from 'react';
 import { Character, INITIAL_CHARACTER } from '../hooks/useCharacters';
 import { INITIAL_WORD_LIST, WordList } from '../hooks/useWordList';
-import { INITIAL_WORD, Word } from '../hooks/useWords';
+import { INITIAL_PINYIN, INITIAL_WORD, Pinyin, Word } from '../hooks/useWords';
 
 export const AppContext = createContext<{
   setWordListId: (value: string) => void;
@@ -19,6 +19,7 @@ export const AppContext = createContext<{
     type: 'form' | 'pinyin';
     indexes: string[];
   }) => Promise<string[]>;
+  getPinyinFromForm_m: (form: string) => Promise<Pinyin>;
 }>({
   setWordListId: () => {},
   wordList: INITIAL_WORD_LIST,
@@ -27,4 +28,5 @@ export const AppContext = createContext<{
   getWordIdsByIndexes_m: async () => [],
   getWord_m: async () => INITIAL_WORD,
   getCharacter_m: async () => INITIAL_CHARACTER,
+  getPinyinFromForm_m: async () => INITIAL_PINYIN,
 });

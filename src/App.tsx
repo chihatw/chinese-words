@@ -11,7 +11,7 @@ function App() {
   const { wordList, wordLists } = useWordList({ wordListId, setWordListId });
   const { words, getWord_m } = useWords(wordListId);
   const { getWordIdsByIndexes_m } = useIndexes();
-  const { getCharacter_m } = useCharacters();
+  const { getCharacter_m, getPinyinFromForm_m } = useCharacters();
   return (
     <AppContext.Provider
       value={{
@@ -22,6 +22,7 @@ function App() {
         setWordListId,
         getWordIdsByIndexes_m,
         getCharacter_m,
+        getPinyinFromForm_m,
       }}
     >
       <AppRoutes />

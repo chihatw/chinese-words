@@ -7,7 +7,7 @@ import {
   updateDocument,
 } from '../repositories/firebase/utils';
 import { db } from '../repositories/firebase';
-import { Pinyin } from './useWords';
+import { Pinyin, string2Pinyin } from './useWords';
 
 const COLLECTION = 'characters';
 
@@ -58,7 +58,22 @@ export const useCharacters = () => {
     };
     return character;
   };
-  return { getCharacter_m };
+
+  const getPinyinFromForm_m = async (form: string) => {
+    let pinyin: Pinyin = string2Pinyin('x');
+    const character = await getCharacter_m(form);
+    let max = 0;
+    if (character) {
+      for (const [pinyinStr, count] of Object.entries(character.pinyins)) {
+        if (count > max) {
+          pinyin = string2Pinyin(pinyinStr);
+          max = count;
+        }
+      }
+    }
+    return pinyin;
+  };
+  return { getCharacter_m, getPinyinFromForm_m };
 };
 
 const buildCharacter = (doc: DocumentData) => {
