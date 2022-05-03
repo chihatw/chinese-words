@@ -5,7 +5,7 @@ import {
   QueryConstraint,
   where,
 } from '@firebase/firestore';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { db } from '../repositories/firebase';
 import {
   snapshotCollection,
@@ -106,6 +106,7 @@ export const useWords = (wordListId: string) => {
   return { words };
 };
 export const useHandleWords = () => {
+  const wordMemoRef = useRef<{ [key: string]: Word }>({});
   const _getDocument = useMemo(
     () =>
       async function <T>({
@@ -188,11 +189,20 @@ export const useHandleWords = () => {
   }, []);
 
   const getWord = async (docId: string) => {
-    return await _getDocument({
+    const memoKey = docId;
+    const memorized = wordMemoRef.current[memoKey];
+    if (!!memorized) return memorized;
+
+    const word = await _getDocument({
       docId,
       initialValue: INITIAL_WORD,
       buildValue: buildWord,
     });
+    wordMemoRef.current = {
+      ...wordMemoRef.current,
+      [memoKey]: word,
+    };
+    return word;
   };
 
   const addWord = async (word: Omit<Word, 'id'>) => {

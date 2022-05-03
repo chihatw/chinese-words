@@ -4,7 +4,7 @@ import {
   QueryConstraint,
   where,
 } from '@firebase/firestore';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { db } from '../repositories/firebase';
 import {
   updateDocument,
@@ -31,6 +31,8 @@ export const INITIAL_INDEX: Index = {
 };
 
 export const useHandleIndexes = () => {
+  const wordIdsByIndexesMemoRef = useRef<{ [key: string]: string[] }>({});
+
   const _setDocument = useMemo(
     () =>
       async function <T extends { id: string }>(value: T) {
@@ -119,6 +121,12 @@ export const useHandleIndexes = () => {
   }): Promise<string[]> => {
     const queries = [];
 
+    const memoKey: string = type + _indexes.join(',');
+
+    const memorized = wordIdsByIndexesMemoRef.current[memoKey];
+    if (!!memorized) return memorized;
+
+    // メモ化されていない場合
     switch (type) {
       case 'form':
         for (const index of _indexes) {
@@ -142,6 +150,10 @@ export const useHandleIndexes = () => {
       buildValue: buildIndex,
     });
     const wordIds = indexes.map((index) => index.id);
+    wordIdsByIndexesMemoRef.current = {
+      ...wordIdsByIndexesMemoRef.current,
+      [memoKey]: wordIds,
+    };
     return wordIds;
   };
 
