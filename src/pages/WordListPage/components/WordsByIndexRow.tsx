@@ -8,24 +8,17 @@ const WordsByIndexRow = ({
   type,
   label,
   index,
-  gotWordsByPinyin,
-  setGotWordsByPinyin,
 }: {
   type: 'form' | 'pinyin';
   index: string;
   label: string;
-  isPinyin?: boolean;
-  isVowelTone?: boolean;
-  gotWordsByPinyin?: Word[];
-  setGotWordsByPinyin?: (value: Word[]) => void;
 }) => {
   const theme = useTheme();
   const { getWordIdsByIndexes_m, getWord_m } = useContext(AppContext);
 
   const [words, setWords] = useState<Word[]>([]);
 
-  const [wordIds, setWordIds] = useState<string[]>([]); // 表示用 非同期（変更反映までに時間がかかる）
-  const wordIdsRef = useRef<string[]>([]); // 内部処理用 同期（変更がすぐに反映）
+  const [wordIds, setWordIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!!index) {
@@ -36,46 +29,22 @@ const WordsByIndexRow = ({
           indexes: [index],
         });
         setWordIds(wordIds);
-        wordIdsRef.current = wordIds;
       };
       fetchData();
     } else {
       setWordIds([]);
-      wordIdsRef.current = [];
     }
   }, [index]);
 
   useEffect(() => {
-    if (!!wordIdsRef.current.length) {
-      const fetchData = async () => {
-        const words = await Promise.all(
-          wordIds.map(async (wordId) => await getWord_m(wordId))
-        );
-        if (!!wordIdsRef.current.length) {
-          setWords(words);
-        } else {
-          setWords([]);
-        }
-      };
-      fetchData();
-    } else {
-      setWords([]);
-    }
+    const fetchData = async () => {
+      const words = await Promise.all(
+        wordIds.map(async (wordId) => await getWord_m(wordId))
+      );
+      setWords(words);
+    };
+    fetchData();
   }, [index, wordIds]);
-
-  const _words = useMemo(() => {
-    if (!gotWordsByPinyin) {
-      return words;
-    }
-    return words.filter(
-      (word) => !gotWordsByPinyin.map((word) => word.id).includes(word.id)
-    );
-  }, [words, gotWordsByPinyin]);
-
-  useEffect(() => {
-    if (!setGotWordsByPinyin) return;
-    setGotWordsByPinyin(words);
-  }, [words, setGotWordsByPinyin]);
 
   return (
     <div style={{ display: 'grid', rowGap: 16 }}>
@@ -84,7 +53,7 @@ const WordsByIndexRow = ({
           ...(theme.typography as any).notoSerifTC900,
         }}
       >{`${label}: ${index}`}</div>
-      {_words.map((word, index) => (
+      {words.map((word, index) => (
         <div key={index} style={{ display: 'flex' }}>
           {word.characters.map((character, index) => (
             <CharacterUnit key={index} character={character} />

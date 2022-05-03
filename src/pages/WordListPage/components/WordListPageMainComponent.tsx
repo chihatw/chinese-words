@@ -7,6 +7,7 @@ import { Index, useHandleIndexes, word2Index } from '../../../hooks/useIndexes';
 
 import {
   INITIAL_WORD,
+  string2Pinyin,
   string2Word,
   useHandleWords,
   Word,
@@ -20,15 +21,17 @@ const WordListPageMainComponent = ({
   words,
   setWord,
   setWords,
-  setStartLine,
   setIndexForm,
+  setIndexPinyin,
+  setIndexVowelTone,
 }: {
   word: Word;
   words: Word[];
   setWord: (value: Word) => void;
   setWords: (value: Word[]) => void;
-  setStartLine: (value: number) => void;
   setIndexForm: (value: string) => void;
+  setIndexPinyin: (value: string) => void;
+  setIndexVowelTone: (value: string) => void;
 }) => {
   const navigate = useNavigate();
   const { addWord, batchAddWords, batchDeleteWords } = useHandleWords();
@@ -56,9 +59,37 @@ const WordListPageMainComponent = ({
         // 改行文字の削除
         indexForm = indexForm.replace(/(\n)/, '');
         setIndexForm(indexForm);
+        setIndexPinyin('');
+        setIndexVowelTone('');
         break;
       case 1:
         // カーソルが該当するピンインを取得
+        const startAt = value[start - 1] || '';
+
+        if (!['\n', ' '].includes(startAt)) {
+          // 後ろにピンインが続くかどうかの確認
+          const postPinyinChars: string[] = [];
+          let i = start;
+          while (!['\n', ' '].includes(value[i])) {
+            postPinyinChars.push(value[i]);
+            i++;
+          }
+          // 前にピンインが続くかどうかの確認
+          const prePinyinChars: string[] = [];
+          i = start - 1;
+          while (!['\n', ' '].includes(value[i])) {
+            prePinyinChars.unshift(value[i]);
+            i--;
+          }
+          const pinyinString = prePinyinChars.concat(postPinyinChars).join('');
+          const { consonant, vowel, tone } = string2Pinyin(pinyinString);
+          setIndexPinyin(consonant + vowel + tone);
+          setIndexVowelTone(vowel + tone);
+        } else {
+          setIndexPinyin('');
+          setIndexVowelTone('');
+        }
+
         setIndexForm('');
         break;
       default:
@@ -138,13 +169,7 @@ const WordListPageMainComponent = ({
   const handleChangeInput = (input: string) => {
     setInput(input);
     const word = string2Word({ value: input, index: words.length });
-
     setWord(word);
-    const inputElem = inputRef.current;
-    if (!!inputElem) {
-      const startLine = getStartLine(inputElem);
-      setStartLine(startLine);
-    }
   };
 
   const handleChangeBatchInput = (batchInput: string) => {

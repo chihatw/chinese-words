@@ -8,8 +8,9 @@ import WordListPageSidePane from './components/WordListPageSidePane';
 const WordListPage = () => {
   const [word, setWord] = useState(INITIAL_WORD);
   const [words, setWords] = useState<Word[]>([]);
-  const [startLine, setStartLine] = useState(0);
   const [indexForm, setIndexForm] = useState('');
+  const [indexPinyin, setIndexPinyin] = useState('');
+  const [indexVowelTone, setIndexVowelTone] = useState('');
 
   return (
     <Grid container>
@@ -19,15 +20,16 @@ const WordListPage = () => {
           words={words}
           setWord={setWord}
           setWords={setWords}
-          setStartLine={setStartLine}
           setIndexForm={setIndexForm}
+          setIndexPinyin={setIndexPinyin}
+          setIndexVowelTone={setIndexVowelTone}
         />
       </Grid>
       <Grid item sm={0} md={4}>
         <WordListPageSidePane
-          word={word}
-          startLine={startLine}
           indexForm={indexForm}
+          indexPinyin={indexPinyin}
+          indexVowelTone={indexVowelTone}
         />
       </Grid>
     </Grid>
