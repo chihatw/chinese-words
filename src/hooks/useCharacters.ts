@@ -76,15 +76,6 @@ export const useCharacters = () => {
   return { getCharacter_m, getPinyinFromForm_m };
 };
 
-const buildCharacter = (doc: DocumentData) => {
-  const character: Character = {
-    id: doc.id || '',
-    form: doc.data().form || '',
-    pinyins: doc.data().pinyins || {},
-  };
-  return character;
-};
-
 export const useHandleCharacters = () => {
   const _getDocumentsByQuery = async <T>({
     queries,
@@ -133,6 +124,13 @@ export const useHandleCharacters = () => {
       },
     []
   );
+  const getCharactersByPinyin = async (pinyin: string) => {
+    const queries = [where(`pinyins.${pinyin}`, '>', 0)];
+    return await _getDocumentsByQuery({
+      queries,
+      buildValue: buildCharacter,
+    });
+  };
   const addCharacter = async ({
     form,
     pinyin,
@@ -172,5 +170,19 @@ export const useHandleCharacters = () => {
   const deleteCharacter = async (id: string) => {
     return await _deleteDocument(id);
   };
-  return { addCharacter, updateCharacter, deleteCharacter };
+  return {
+    addCharacter,
+    updateCharacter,
+    deleteCharacter,
+    getCharactersByPinyin,
+  };
+};
+
+const buildCharacter = (doc: DocumentData) => {
+  const character: Character = {
+    id: doc.id || '',
+    form: doc.data().form || '',
+    pinyins: doc.data().pinyins || {},
+  };
+  return character;
 };

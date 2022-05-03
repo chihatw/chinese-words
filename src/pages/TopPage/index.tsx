@@ -29,6 +29,12 @@ const TopPage = () => {
       >
         Search
       </Button>
+      <Button
+        onClick={() => navigate('/character')}
+        sx={{ justifyContent: 'flex-start' }}
+      >
+        Character
+      </Button>
     </AppLayout>
   );
 };
