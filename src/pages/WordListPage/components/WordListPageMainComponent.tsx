@@ -172,6 +172,15 @@ const WordListPageMainComponent = ({
       };
       const index = word2Index({ word });
       setIndex(index);
+      setFormStr('');
+      setPinyinStr('');
+      setSentence('');
+      setJapanese('');
+      setForms([]);
+      setPinyins([]);
+      setIndexForm('');
+      setIndexPinyin('');
+      setIndexVowelTone('');
     }
   };
 
@@ -185,7 +194,7 @@ const WordListPageMainComponent = ({
         <Button onClick={() => navigate('/lists')}>戻る</Button>
         <Button onClick={() => navigate('/search')}>Search</Button>
       </div>
-      <WordRow word={word} index={word.index} />
+      <WordRow word={word} index={words.length} />
       <TextField
         inputRef={formStrInputRef}
         label='formStr'
