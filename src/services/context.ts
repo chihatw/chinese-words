@@ -20,6 +20,7 @@ export const AppContext = createContext<{
     indexes: string[];
   }) => Promise<string[]>;
   getPinyinFromForm_m: (form: string) => Promise<Pinyin>;
+  removeWord_m: (value: string) => void;
 }>({
   setWordListId: () => {},
   wordList: INITIAL_WORD_LIST,
@@ -29,4 +30,5 @@ export const AppContext = createContext<{
   getWord_m: async () => INITIAL_WORD,
   getCharacter_m: async () => INITIAL_CHARACTER,
   getPinyinFromForm_m: async () => INITIAL_PINYIN,
+  removeWord_m: () => {},
 });

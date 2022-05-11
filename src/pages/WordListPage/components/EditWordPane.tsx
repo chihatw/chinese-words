@@ -1,5 +1,5 @@
 import { Button, TextField } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import WordRow from '../../../components/WordRow';
 import { useHandleIndexes, word2Index } from '../../../hooks/useIndexes';
 import {
@@ -11,6 +11,7 @@ import {
   useHandleWords,
   Word,
 } from '../../../hooks/useWords';
+import { AppContext } from '../../../services/context';
 
 const EditWordPane = ({
   word: superWord,
@@ -19,6 +20,10 @@ const EditWordPane = ({
   word: Word;
   callback: () => void;
 }) => {
+  const { removeWord_m } = useContext(AppContext);
+  const { updateWord } = useHandleWords();
+  const { updateIndex } = useHandleIndexes();
+
   const [formStr, setFormStr] = useState('');
   const [pinyinStr, setPinyinStr] = useState('');
   const [sentence, setSentence] = useState('');
@@ -26,9 +31,6 @@ const EditWordPane = ({
   const [word, setWord] = useState(INITIAL_WORD);
   const [pinyins, setPinyins] = useState<Pinyin[]>([]);
   const [forms, setForms] = useState<string[]>([]);
-
-  const { updateWord } = useHandleWords();
-  const { updateIndex } = useHandleIndexes();
 
   useEffect(() => {
     setWord(superWord);
@@ -84,6 +86,7 @@ const EditWordPane = ({
   const handleSubmit = async () => {
     const result = await updateWord(word);
     if (!!result) {
+      removeWord_m(word.id);
       const index = word2Index({ word });
       const result = await updateIndex(index);
       if (!!result) {

@@ -137,7 +137,13 @@ export const useWords = (wordListId: string) => {
     return word;
   };
 
-  return { words, getWord_m };
+  const removeWord_m = (wordId: string) => {
+    const word_m = { ...wordMemoRef.current };
+    delete word_m[wordId];
+    wordMemoRef.current = word_m;
+  };
+
+  return { words, getWord_m, removeWord_m };
 };
 export const useHandleWords = () => {
   const _getDocumentsByQuery = async <T>({
