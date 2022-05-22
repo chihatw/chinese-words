@@ -196,6 +196,7 @@ const WordListPageMainComponent = ({
       </div>
       <WordRow word={word} index={words.length} />
       <TextField
+        autoComplete='off'
         inputRef={formStrInputRef}
         label='formStr'
         size='small'
@@ -205,18 +206,21 @@ const WordListPageMainComponent = ({
       <TextField
         inputRef={pinyinStrInputRef}
         label='pinyinStr'
+        autoComplete='off'
         size='small'
         value={pinyinStr}
         onChange={(e) => handleChangePinyinStr(e.target.value)}
       />
       <TextField
         label='sentence'
+        autoComplete='off'
         size='small'
         value={sentence}
         onChange={(e) => setSentence(e.target.value)}
       />
       <TextField
         label='japanese'
+        autoComplete='off'
         size='small'
         value={japanese}
         onChange={(e) => setJapanese(e.target.value)}
